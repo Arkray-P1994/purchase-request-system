@@ -1,0 +1,150 @@
+{
+  "messsage": "Vendor quotation fecthed successfully",
+  "success": true,
+  "data": {
+    "id": 1,
+    "code": "VND-1283",
+    "name": "Earth Supply Inc",
+    "email": null,
+    "products": null,
+    "created_at": null,
+    "updated_at": null,
+    "deleted_at": null,
+    "created_by": null,
+    "quotations": [
+      {
+        "id": 1,
+        "purchaser": "Acme Corp",
+        "project": "Website Redesign",
+        "purpose": "Improve user experience",
+        "status": "submitted",
+        "deadline": "2026-01-15",
+        "requestor_id": 1,
+        "address": "123 Main St, New York",
+        "quotation_number": "QTN-001",
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": 1,
+        "pivot": {
+          "vendor_id": 1,
+          "quotation_id": 1
+        }
+      },
+      {
+        "id": 1,
+        "purchaser": "Acme Corp",
+        "project": "Website Redesign",
+        "purpose": "Improve user experience",
+        "status": "submitted",
+        "deadline": "2026-01-15",
+        "requestor_id": 1,
+        "address": "123 Main St, New York",
+        "quotation_number": "QTN-001",
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": 1,
+        "pivot": {
+          "vendor_id": 1,
+          "quotation_id": 1
+        }
+      },
+      {
+        "id": 3,
+        "purchaser": "Gamma Industries",
+        "project": "CRM Integration",
+        "purpose": "Automate sales workflow",
+        "status": "submitted",
+        "deadline": "2026-03-10",
+        "requestor_id": 3,
+        "address": "789 Pine Rd, Chicago",
+        "quotation_number": "QTN-003",
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": 1,
+        "pivot": {
+          "vendor_id": 1,
+          "quotation_id": 3
+        }
+      },
+      {
+        "id": 11,
+        "purchaser": "Lambda Corp",
+        "project": "Mobile Game",
+        "purpose": "Develop addictive gameplay",
+        "status": "submitted",
+        "deadline": "2026-02-18",
+        "requestor_id": 2,
+        "address": "808 Willow Ave, Dallas",
+        "quotation_number": "QTN-011",
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": 1,
+        "pivot": {
+          "vendor_id": 1,
+          "quotation_id": 11
+        }
+      },
+      {
+        "id": 22,
+        "purchaser": "Chi Solutions",
+        "project": "IT Support",
+        "purpose": "24/7 maintenance",
+        "status": "submitted",
+        "deadline": "2026-01-27",
+        "requestor_id": 1,
+        "address": "1010 Papaya St, Philadelphia",
+        "quotation_number": "QTN-022",
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": 1,
+        "pivot": {
+          "vendor_id": 1,
+          "quotation_id": 22
+        }
+      },
+      {
+        "id": 37,
+        "purchaser": "Nu Xi Solutions",
+        "project": "Cloud Migration",
+        "purpose": "Move infrastructure",
+        "status": "submitted",
+        "deadline": "2026-01-19",
+        "requestor_id": 1,
+        "address": "2525 Guava St, Fresno",
+        "quotation_number": "QTN-037",
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": 1,
+        "pivot": {
+          "vendor_id": 1,
+          "quotation_id": 37
+        }
+      },
+      {
+        "id": 39,
+        "purchaser": "Omicron Pi LLC",
+        "project": "Social Media Strategy",
+        "purpose": "Plan campaigns",
+        "status": "submitted",
+        "deadline": "2026-03-19",
+        "requestor_id": 3,
+        "address": "2727 Fig Ave, Kansas City",
+        "quotation_number": "QTN-039",
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": 1,
+        "pivot": {
+          "vendor_id": 1,
+          "quotation_id": 39
+        }
+      }
+    ]
+  }
+}

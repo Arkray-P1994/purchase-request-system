@@ -1,0 +1,75 @@
+{
+  "message": "Quotation fetched succesfully",
+  "success": true,
+  "data": {
+    "id": 1,
+    "purchaser": "Acme Corp",
+    "project": "Website Redesign",
+    "purpose": "Improve user experience",
+    "deadline": "2026-01-15",
+    "requestor_id": 1,
+    "address": "123 Main St, New York",
+    "quotation_number": "QTN-001",
+    "created_at": null,
+    "updated_at": null,
+    "deleted_at": null,
+    "created_by": 1,
+    "vendors": [
+      {
+        "id": 1,
+        "code": "VND-1283",
+        "name": "Earth Supply Inc",
+        "email": null,
+        "products": null,
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": null,
+        "pivot": {
+          "quotation_id": 1,
+          "vendor_id": 1
+        }
+      },
+      {
+        "id": 1,
+        "code": "VND-1283",
+        "name": "Earth Supply Inc",
+        "email": null,
+        "products": null,
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": null,
+        "pivot": {
+          "quotation_id": 1,
+          "vendor_id": 1
+        }
+      },
+      {
+        "id": 3,
+        "code": "V002",
+        "name": "Global Tech",
+        "email": "sales@globaltech.com",
+        "products": "Laptops, Monitors, Keyboards",
+        "created_at": null,
+        "updated_at": null,
+        "deleted_at": null,
+        "created_by": 1,
+        "pivot": {
+          "quotation_id": 1,
+          "vendor_id": 3
+        }
+      }
+    ],
+    "requestor": {
+      "id": 1,
+      "code": "P3001",
+      "name": "Jonathan",
+      "department_id": 1,
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": null
+    }
+  }
+}

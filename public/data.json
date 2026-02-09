@@ -1,0 +1,122 @@
+{
+  "success": true,
+  "message": "Vendors fetched successfully",
+  "data": [
+    {
+      "id": 1,
+      "code": "VND-1283",
+      "name": "Earth Supply Inc",
+      "email": null,
+      "products": null,
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": null
+    },
+    {
+      "id": 2,
+      "code": "V001",
+      "name": "Acme Supplies",
+      "email": "contact@acmesupplies.com",
+      "products": "Pens, Paper, Notebooks",
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": 1
+    },
+    {
+      "id": 3,
+      "code": "V002",
+      "name": "Global Tech",
+      "email": "sales@globaltech.com",
+      "products": "Laptops, Monitors, Keyboards",
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": 1
+    },
+    {
+      "id": 4,
+      "code": "V003",
+      "name": "Fresh Foods Co.",
+      "email": "info@freshfoods.com",
+      "products": "Apples, Oranges, Bananas",
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": 1
+    },
+    {
+      "id": 5,
+      "code": "V004",
+      "name": "Urban Apparel",
+      "email": "support@urbanapparel.com",
+      "products": "Shirts, Jeans, Jackets",
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": 1
+    },
+    {
+      "id": 6,
+      "code": "V005",
+      "name": "Green Gardens",
+      "email": "hello@greengardens.com",
+      "products": "Seeds, Fertilizer, Pots",
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": 1
+    },
+    {
+      "id": 7,
+      "code": "V006",
+      "name": "Bright Electronics",
+      "email": "contact@brightelectronics.com",
+      "products": "Smartphones, Tablets, Chargers",
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": 1
+    },
+    {
+      "id": 8,
+      "code": "V007",
+      "name": "Paper & Co.",
+      "email": "info@paperco.com",
+      "products": "Notebooks, Envelopes, Sticky Notes",
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": 1
+    },
+    {
+      "id": 9,
+      "code": "V008",
+      "name": "Home Essentials",
+      "email": "support@homeessentials.com",
+      "products": "Cups, Plates, Utensils",
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": 1
+    },
+    {
+      "id": 10,
+      "code": "V009",
+      "name": "Tech World",
+      "email": "sales@techworld.com",
+      "products": "Routers, USB Cables, Headphones",
+      "created_at": null,
+      "updated_at": null,
+      "deleted_at": null,
+      "created_by": 1
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "total_pages": 6,
+    "limit": 10,
+    "total_data": 51
+  }
+}

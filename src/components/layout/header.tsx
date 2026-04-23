@@ -4,19 +4,10 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { TopNav } from "./top-nav";
 import { useUser } from "@/api/fetch-user";
-
-const defaultTopNav = [
-  { title: "Dashboard", href: "/asset-inventory" },
-  { title: "Assets", href: "/asset-inventory/assets" },
-  { title: "Asset Logs", href: "/asset-inventory/asset-logs" },
-  { title: "Categories", href: "/asset-inventory/categories" },
-  { title: "Users", href: "/asset-inventory/users" },
-];
+import { sidebarData } from "./sidebar/sidebar-data";
 
 type HeaderProps = React.HTMLAttributes<HTMLElement> & {
   fixed?: boolean;
-  ref?: React.Ref<HTMLElement>;
-  /** current path or active href */
   activeHref?: string;
 };
 
@@ -34,22 +25,23 @@ export function Header({
     const onScroll = () => {
       setOffset(document.body.scrollTop || document.documentElement.scrollTop);
     };
+
     document.addEventListener("scroll", onScroll, { passive: true });
     return () => document.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Filter links based on user position and then map to include isActive state
-  const navLinks = defaultTopNav
+  const navLinks = sidebarData.navGroups
+    .flatMap((group) => group.items)
     .filter((item) => {
-      // Hide "Users" tab if user is not an admin
       if (item.title === "Users") {
         return user?.user.position === "superadmin";
       }
       return true;
     })
     .map((item) => ({
-      ...item,
-      isActive: activeHref === item.href,
+      title: item.title,
+      url: item.url ?? "#",
+      isActive: activeHref === item.url,
     }));
 
   return (
@@ -67,7 +59,7 @@ export function Header({
           "relative flex h-full items-center gap-3 p-4 sm:gap-4",
           offset > 10 &&
             fixed &&
-            "after:bg-background/20 after:absolute after:inset-0 after:-z-10 after:backdrop-blur-lg",
+            "after:absolute after:inset-0 after:-z-10 after:bg-background/20 after:backdrop-blur-lg",
         )}
       >
         <SidebarTrigger variant="outline" className="max-md:scale-125" />

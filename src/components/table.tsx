@@ -1,7 +1,4 @@
-import {
-  DataTablePagination,
-  DataTableToolbar,
-} from "@/components/data-table/index";
+import { DataTablePagination } from "@/components/data-table/pagination";
 import {
   Table,
   TableBody,
@@ -10,9 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useTableUrlState } from "@/hooks/use-table-url-state";
 import { rankItem, type RankingInfo } from "@tanstack/match-sorter-utils";
-import { getRouteApi } from "@tanstack/react-router";
 import {
   flexRender,
   getCoreRowModel,
@@ -21,33 +16,38 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   useReactTable,
+  type ColumnDef,
   type FilterFn,
+  type Table as TableType,
   type VisibilityState,
+  type PaginationState,
+  type ColumnFiltersState,
 } from "@tanstack/react-table";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Columns as columns } from "./columns";
-import { Vendor } from "./schema";
+import { useCallback, useEffect, useMemo, useState, ReactNode } from "react";
 
-/**
- * 1. Define the Response Structure
- * This matches your PHP Controller output
- */
-export type ApiResponse = {
-  data: Vendor[];
-  uniques?: {
-    remarks: string[];
-    location: string[];
-    asset_name: string[];
-  };
+export type ApiResponse<T> = {
+  data: T[];
   total: number;
   total_pages: number;
+  uniques?: Record<string, string[]>;
   filters_applied?: any;
 };
 
-type DataTableProps = {
-  data: ApiResponse;
-  route: ReturnType<typeof getRouteApi>;
-};
+interface DataTableProps<TData, TValue> {
+  columns: ColumnDef<TData, TValue>[];
+  data: ApiResponse<TData>;
+  urlState: {
+    pagination?: PaginationState;
+    onPaginationChange: (updater: any) => void;
+    globalFilter?: string;
+    onGlobalFilterChange: (value: string) => void;
+    columnFilters?: ColumnFiltersState;
+    onColumnFiltersChange: (updater: any) => void;
+    ensurePageInRange: (pageCount: number) => void;
+  };
+  renderToolbar?: (table: TableType<TData>) => ReactNode;
+  storageKey?: string;
+}
 
 declare module "@tanstack/react-table" {
   interface FilterFns {
@@ -64,10 +64,14 @@ const fuzzyFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
   return itemRank.passed;
 };
 
-export function DataTable({ data, route }: DataTableProps) {
+export function DataTable<TData, TValue>({
+  columns,
+  data,
+  urlState,
+  renderToolbar,
+  storageKey = "data-table",
+}: DataTableProps<TData, TValue>) {
   const isBrowser = typeof window !== "undefined";
-
-  // Safely extract the array for the table
   const tableData = useMemo(() => data?.data || [], [data]);
 
   const allowedColumnIds = useMemo(() => {
@@ -76,22 +80,23 @@ export function DataTable({ data, route }: DataTableProps) {
         .map((c) => (c as any).id ?? (c as any).accessorKey)
         .filter(Boolean),
     );
-  }, []);
+  }, [columns]);
 
-  const defaultVisibility: VisibilityState = {};
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
     () => {
-      if (!isBrowser) return defaultVisibility;
+      if (!isBrowser) return {};
       try {
-        const raw = window.localStorage.getItem(`data-table:columnVisibility`);
-        if (!raw) return defaultVisibility;
+        const raw = window.localStorage.getItem(
+          `${storageKey}:columnVisibility`,
+        );
+        if (!raw) return {};
         const parsed = JSON.parse(raw) as VisibilityState;
         return Object.fromEntries(
           Object.entries(parsed).filter(([key]) => allowedColumnIds.has(key)),
-        ) as VisibilityState;
+        );
       } catch {
-        return defaultVisibility;
+        return {};
       }
     },
   );
@@ -99,39 +104,26 @@ export function DataTable({ data, route }: DataTableProps) {
   const persistVisibility = useCallback(
     (next: VisibilityState) => {
       if (!isBrowser) return;
-      try {
-        window.localStorage.setItem(
-          `data-table:columnVisibility`,
-          JSON.stringify(next),
-        );
-      } catch {
-        /* ignore */
-      }
+      window.localStorage.setItem(
+        `${storageKey}:columnVisibility`,
+        JSON.stringify(next),
+      );
     },
-    [isBrowser],
+    [isBrowser, storageKey],
   );
 
   const {
-    globalFilter,
+    globalFilter = "",
     onGlobalFilterChange,
-    columnFilters,
+    columnFilters = [],
     onColumnFiltersChange,
-    pagination,
+    pagination = { pageIndex: 0, pageSize: 10 },
     onPaginationChange,
     ensurePageInRange,
-  } = useTableUrlState({
-    search: route.useSearch(),
-    navigate: route.useNavigate() as any,
-    pagination: { defaultPage: 1, defaultPageSize: 10 },
-    globalFilter: { enabled: true, key: "filter" },
-    columnFilters: [
-      { columnId: "status", searchKey: "status", type: "array" },
-      { columnId: "priority", searchKey: "priority", type: "array" },
-    ],
-  });
+  } = urlState;
 
   const table = useReactTable({
-    data: tableData, // 2. Pass the array inside the object
+    data: tableData,
     columns,
     state: {
       columnVisibility,
@@ -164,13 +156,14 @@ export function DataTable({ data, route }: DataTableProps) {
 
   const pageCount = data?.total_pages ?? 0;
   useEffect(() => {
-    ensurePageInRange(pageCount);
+    if (ensurePageInRange) {
+      ensurePageInRange(pageCount);
+    }
   }, [pageCount, ensurePageInRange]);
 
   return (
     <div className="space-y-4 max-sm:has-[div[role='toolbar']]:mb-16">
-      {/* 3. Pass uniques to the toolbar for faceted filtering */}
-      <DataTableToolbar table={table} searchPlaceholder="Search..." />
+      {renderToolbar?.(table)}
       <div className="relative overflow-auto rounded-md border">
         <Table>
           <TableHeader className="text-red-500">
@@ -241,7 +234,6 @@ export function DataTable({ data, route }: DataTableProps) {
           </TableBody>
         </Table>
       </div>
-
       <DataTablePagination totalPages={data.total_pages} table={table} />
     </div>
   );

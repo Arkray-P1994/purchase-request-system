@@ -14,22 +14,16 @@ import Spinner from "@/components/ui/spinner";
 
 const PrintList = () => {
   const { ids, deleteSelectedId } = useIdStore();
-
   const { data, isLoading } = useAssets({
-    id: ids.join(","), // Standard way to pass array IDs to query strings
-    limit: "9999",
+    id: String(ids),
+    limit: "9999", // Use a number larger than your total database count
     sort: "location:asc",
   });
-
   if (isLoading) return <Spinner />;
-
-  // Safeguard against undefined data
-  const assets = data?.data || [];
-
   return (
     <div className="flex flex-col gap-4 w-full max-w-md mx-auto p-4">
-      {assets.length > 0 ? (
-        assets.map((asset: AssetFormValues) => (
+      {ids.length > 0 &&
+        data.data.map((asset: AssetFormValues) => (
           <Card key={asset.id} className="overflow-hidden">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
@@ -41,7 +35,7 @@ const PrintList = () => {
                     {asset.asset_id}
                   </Badge>
                   <Trash
-                    className="w-4 text-red-500 cursor-pointer hover:text-red-700 transition-colors"
+                    className="w-4 text-red-500 cursor-pointer"
                     onClick={() => deleteSelectedId(Number(asset.id))}
                   />
                 </div>
@@ -88,12 +82,7 @@ const PrintList = () => {
               </div>
             </CardContent>
           </Card>
-        ))
-      ) : (
-        <div className="text-center py-10 text-muted-foreground">
-          No assets selected for printing.
-        </div>
-      )}
+        ))}
     </div>
   );
 };

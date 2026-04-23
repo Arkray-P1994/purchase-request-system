@@ -109,7 +109,7 @@ export function AssetInsertForm({ data, action, setOpen }: CreateFormProps) {
               label="Asset Name"
               variant="input"
             />
-            <DatePicker form={form} />
+            <DatePicker control={form.control} name="date" />
 
             <Field
               control={form.control}

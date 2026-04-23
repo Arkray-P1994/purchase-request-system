@@ -16,9 +16,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { Control, FieldValues, Path } from "react-hook-form";
+import { cn } from "@/lib/utils";
 
 interface FieldProps<T extends FieldValues> {
-  control: Control<T>;
+  control: Control<any>;
   name: Path<T>;
   label: string;
   placeholder?: string;
@@ -28,6 +29,8 @@ interface FieldProps<T extends FieldValues> {
   rows?: number;
   options?: SelectOption[]; // for select dropdown
   selectOptions?: SelectOptionByName[]; // for select dropdown
+  hideLabel?: boolean;
+  className?: string;
 }
 type SelectOption = {
   id: number;
@@ -49,21 +52,23 @@ export function Field<T extends FieldValues>({
   rows = 4,
   options = [],
   selectOptions = [],
+  hideLabel = false,
+  className = "",
 }: FieldProps<T>) {
   return (
     <FormField
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem>
-          <FormLabel className="text-xs font-semibold">{label}</FormLabel>
+        <FormItem className={hideLabel ? "space-y-0" : ""}>
+          {!hideLabel && <FormLabel className="text-xs font-semibold">{label}</FormLabel>}
           <FormControl>
             {variant === "textarea" ? (
               <Textarea
                 placeholder={placeholder}
                 rows={rows}
                 {...field}
-                className="min-h-24 text-base border-muted-foreground resize-none"
+                className={cn("min-h-24 text-base border-muted-foreground resize-none", className)}
               />
             ) : variant === "select" ? (
               <Select
@@ -110,19 +115,21 @@ export function Field<T extends FieldValues>({
                 type={type}
                 placeholder={placeholder}
                 {...field}
+                value={type === "number" && field.value === 0 ? "" : (field.value ?? "")}
                 onChange={(e) => {
                   if (type === "number") {
-                    // convert string → number (or empty)
-                    field.onChange(
-                      e.target.value === ""
-                        ? undefined
-                        : Number(e.target.value),
-                    );
+                    const val = e.target.value;
+                    field.onChange(val === "" ? 0 : Number(val));
                   } else {
                     field.onChange(e.target.value);
                   }
                 }}
-                className=" text-xs border-muted-foreground"
+                onFocus={(e) => {
+                  if (type === "number" && field.value === 0) {
+                    e.target.select();
+                  }
+                }}
+                className={cn("text-xs border-muted-foreground", className)}
               />
             )}
           </FormControl>

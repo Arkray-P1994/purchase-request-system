@@ -1,16 +1,17 @@
+import { useSearchParams } from "@/api/data";
 import { Header } from "@/components/layout/header";
 import { useSearch } from "@tanstack/react-router";
-
-import { useSearchParams } from "@/api/data";
 import { ConfigDrawer } from "@/components/layout/config-drawer";
 import { Main } from "@/components/main";
 import { ModeToggle } from "@/components/toggle";
-import { DataTable } from "./components/table";
+import { DataTable } from "@/components/table";
+
+import { Columns } from "./components/columns";
+import { useDataTableState } from "@/hooks/table-state";
 
 export function AssetPage() {
-  const search = useSearch({ from: "/asset-inventory/assets/" }) as {
-    filter?: string;
-  };
+  const { tableState } = useDataTableState();
+  const search = useSearch({ from: "/asset-inventory/assets/" }) as any;
   const { data } = useSearchParams(search);
   return (
     <>
@@ -37,7 +38,7 @@ export function AssetPage() {
 
         <div></div>
         <div className="-mx-4 flex-1 overflow-disable px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
-          <DataTable data={data ?? []} />
+          <DataTable data={data} columns={Columns} urlState={tableState} />
         </div>
       </Main>
     </>

@@ -1,0 +1,621 @@
+import { useRequest } from "@/api/fetch-request";
+import { ConfigDrawer } from "@/components/layout/config-drawer";
+import { Header } from "@/components/layout/header";
+import { Main } from "@/components/main";
+import { ModeToggle } from "@/components/toggle";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import {
+  ArrowLeft,
+  Calendar,
+  CreditCard,
+  FileText,
+  Package,
+  User,
+  MapPin,
+  Hash,
+  Building2,
+  Paperclip,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+} from "lucide-react";
+import moment from "moment";
+import { useParams, Link } from "@tanstack/react-router";
+
+export function ViewRequest() {
+  const { requestId } = useParams({
+    from: "/purchase-request/requests/$requestId/",
+  });
+  const { data: request, isLoading } = useRequest({ id: requestId });
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!request) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <AlertCircle className="h-12 w-12 text-destructive" />
+        <h2 className="text-2xl font-bold">Request Not Found</h2>
+        <Button onClick={() => window.history.back()}>Go Back</Button>
+      </div>
+    );
+  }
+
+  const totalAmount =
+    request.items?.reduce(
+      (sum: number, item: any) =>
+        sum + Number(item.quantity || 0) * Number(item.unit_price || 0),
+      0,
+    ) || 0;
+
+  const StatusBadge = ({ status }: { status: string }) => {
+    const variants: Record<string, string> = {
+      Approved: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+      Pending: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+      Rejected: "bg-destructive/10 text-destructive border-destructive/20",
+    };
+    return (
+      <Badge
+        className={`px-2 py-0.5 font-bold uppercase tracking-wider text-[10px] border ${variants[status] || "bg-muted text-muted-foreground"}`}
+      >
+        {status}
+      </Badge>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-background/50">
+      <Header fixed>
+        <div className="ms-auto flex items-center space-x-4">
+          <ModeToggle />
+          <ConfigDrawer />
+        </div>
+      </Header>
+      <Main>
+        <div className="max-w-8xl mx-auto space-y-8 pb-12">
+          {/* Top Actions */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              onClick={() => window.history.back()}
+              className="group"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+              Back to Requests
+            </Button>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/purchase-request/requests/$requestId/edit"
+                params={{ requestId: String(requestId) }}
+              >
+                <Button variant="outline" size="sm">
+                  <FileText className="mr-2 h-4 w-4" />
+                  Edit Request
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Header Section */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-bold text-xs ring-1 ring-primary/20">
+                  <Hash className="h-3 w-3" />
+                  {request.ticket_id}
+                </span>
+                <StatusBadge status={request.status_id?.name || "Pending"} />
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-4xl font-extrabold tracking-tight text-foreground">
+                  Purchase Request
+                </h1>
+                <div className="flex items-center gap-4 text-muted-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <User className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      {request.user_id?.name}
+                    </span>
+                  </div>
+                  <div className="w-1 h-1 rounded-full bg-muted-foreground/30" />
+                  <div className="flex items-center gap-1.5">
+                    <Building2 className="h-4 w-4" />
+                    <span className="text-sm font-medium">
+                      {request.team_id?.name}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex flex-col items-end gap-2 text-right">
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest leading-none">
+                Total Amount
+              </span>
+              <span className="text-4xl font-black text-primary">
+                {new Intl.NumberFormat("en-PH", {
+                  style: "currency",
+                  currency: "PHP",
+                }).format(totalAmount)}
+              </span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              {/* Procurement Details */}
+              <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <Package className="h-5 w-5 text-primary" />
+                    Procurement Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-12">
+                    <DetailItem
+                      label="Transaction Type"
+                      value={request.transaction_type}
+                      icon={<CreditCard className="h-4 w-4" />}
+                    />
+                    <DetailItem
+                      label="Payment Method"
+                      value={request.payment_method}
+                      icon={<CreditCard className="h-4 w-4" />}
+                    />
+                    <DetailItem
+                      label="Purchase Type"
+                      value={request.purchase_type}
+                      icon={<FileText className="h-4 w-4" />}
+                    />
+                    <DetailItem
+                      label="Currency"
+                      value={request.currency}
+                      icon={<CreditCard className="h-4 w-4" />}
+                    />
+                    <DetailItem
+                      label="Vendor"
+                      value={request.vendor}
+                      icon={<Building2 className="h-4 w-4" />}
+                    />
+                    <DetailItem
+                      label="Payee / Recipient"
+                      value={request.payee}
+                      icon={<User className="h-4 w-4" />}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Accounting Reference */}
+              <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <Hash className="h-5 w-5 text-primary" />
+                    Accounting Reference
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <DetailItem
+                      label="Cost Center"
+                      value={request.cost_center}
+                      icon={<MapPin className="h-4 w-4" />}
+                    />
+                    <DetailItem
+                      label="Charge To"
+                      value={request.charge_to}
+                      icon={<MapPin className="h-4 w-4" />}
+                    />
+                    <DetailItem
+                      label="Management No."
+                      value={request.management_number}
+                      icon={<Hash className="h-4 w-4" />}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Line Items */}
+              <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm overflow-hidden">
+                <CardHeader>
+                  <CardTitle className="text-lg font-bold flex items-center gap-2">
+                    <Package className="h-5 w-5 text-primary" />
+                    Line Items
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader className="bg-muted/50 border-b-2">
+                      <TableRow>
+                        <TableHead className="w-[50px] text-center font-bold text-[10px] uppercase border-r">
+                          #
+                        </TableHead>
+                        <TableHead className="font-bold text-[10px] uppercase min-w-[120px] border-r">
+                          Title
+                        </TableHead>
+                        <TableHead className="font-bold text-[10px] uppercase border-r">
+                          Budget Code
+                        </TableHead>
+                        <TableHead className="font-bold text-[10px] uppercase min-w-[120px] border-r">
+                          Item Name
+                        </TableHead>
+                        <TableHead className="font-bold text-[10px] uppercase min-w-[120px] border-r">
+                          Purpose
+                        </TableHead>
+                        <TableHead className="w-[60px] text-center font-bold text-[10px] uppercase border-r">
+                          Qty
+                        </TableHead>
+                        <TableHead className="w-[100px] text-right font-bold text-[10px] uppercase border-r">
+                          Unit Price
+                        </TableHead>
+                        <TableHead className="w-[110px] text-right font-bold text-[10px] uppercase border-r">
+                          Total
+                        </TableHead>
+                        <TableHead className="font-bold text-[10px] uppercase min-w-[120px]">
+                          Remarks
+                        </TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {request.items?.map((item: any, index: number) => (
+                        <TableRow
+                          key={item.id || index}
+                          className="group hover:bg-muted/30 transition-colors border-b"
+                        >
+                          <TableCell className="text-center text-muted-foreground font-medium border-r">
+                            {index + 1}
+                          </TableCell>
+                          <TableCell className="border-r">
+                            <p className="font-bold text-sm leading-none text-foreground">
+                              {item.item_title}
+                            </p>
+                          </TableCell>
+                          <TableCell className="border-r">
+                            <code className="text-[10px] font-mono px-2 py-0.5 bg-primary/5 text-primary rounded-md border border-primary/10 font-bold">
+                              {item.budget_code || "N/A"}
+                            </code>
+                          </TableCell>
+                          <TableCell className="border-r">
+                            <p className="text-xs text-muted-foreground font-medium">
+                              {item.item_name}
+                            </p>
+                          </TableCell>
+                          <TableCell className="border-r">
+                            <span
+                              className="text-xs font-medium text-muted-foreground line-clamp-2"
+                              title={item.item_purpose}
+                            >
+                              {item.item_purpose || "—"}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center font-bold text-sm border-r">
+                            {item.quantity}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-sm border-r">
+                            {new Intl.NumberFormat("en-PH", {
+                              style: "currency",
+                              currency: request.currency || "PHP",
+                              minimumFractionDigits: 2,
+                            }).format(item.unit_price)}
+                          </TableCell>
+                          <TableCell className="text-right font-black text-sm text-primary border-r">
+                            {new Intl.NumberFormat("en-PH", {
+                              style: "currency",
+                              currency: request.currency || "PHP",
+                              minimumFractionDigits: 2,
+                            }).format(item.quantity * item.unit_price)}
+                          </TableCell>
+                          <TableCell>
+                            <span
+                              className="text-xs italic text-muted-foreground/80 line-clamp-2"
+                              title={item.item_remarks}
+                            >
+                              {item.item_remarks || "—"}
+                            </span>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+
+              {/* Remarks */}
+              {request.remarks && (
+                <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      Requester Remarks
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground italic leading-relaxed bg-muted/30 p-4 rounded-xl border border-muted/50">
+                      "{request.remarks}"
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Sidebar Information */}
+            <div className="space-y-6">
+              <Card className="border-none shadow-md bg-primary text-primary-foreground">
+                <CardHeader>
+                  <CardTitle className="text-sm font-black uppercase tracking-widest opacity-80 flex items-center gap-2">
+                    <Clock className="h-4 w-4" />
+                    Timeline
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-2">
+                  <div className="space-y-1.5">
+                    <p className="text-[10px] font-bold uppercase opacity-60">
+                      Desired Delivery
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 opacity-80" />
+                      <span className="text-lg font-black tracking-tight">
+                        {request.desired_delivery_date
+                          ? moment(request.desired_delivery_date).format(
+                              "MMMM DD, YYYY",
+                            )
+                          : "Not specified"}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="h-px bg-primary-foreground/20" />
+                  <div className="flex justify-between items-end">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase opacity-60">
+                        Created At
+                      </p>
+                      <p className="text-sm font-bold">
+                        {moment(request.created_at).format("LL")}
+                      </p>
+                    </div>
+                    <CheckCircle2 className="h-8 w-8 opacity-20" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Approval Workflow */}
+              <Card className="border border-border/50 shadow-none bg-card flex flex-col">
+                <CardHeader className="pb-5">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                      Approval Workflow
+                    </CardTitle>
+                    <span className="text-[10px] tracking-wider text-muted-foreground/60">
+                      {request.current_level}/
+                      {
+                        (Array.isArray(request.workflow)
+                          ? request.workflow
+                          : Object.values(request.workflow || {}).filter(
+                              (w: any) =>
+                                w &&
+                                typeof w === "object" &&
+                                "approval_level" in w,
+                            )
+                        ).length
+                      }
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-2">
+                  <div className="relative">
+                    {(Array.isArray(request.workflow)
+                      ? request.workflow
+                      : Object.values(request.workflow || {}).filter(
+                          (w: any) =>
+                            w && typeof w === "object" && "approval_level" in w,
+                        )
+                    )
+                      .sort(
+                        (a: any, b: any) =>
+                          Number(a.approval_level) - Number(b.approval_level),
+                      )
+                      .map((step: any, index: number, arr: any[]) => {
+                        const approval = request.request_approvals?.find(
+                          (a: any) => a.level === step.approval_level,
+                        );
+                        const isRejected =
+                          approval?.status === "Rejected" ||
+                          (request.status_id?.name === "Rejected" &&
+                            step.approval_level === request.current_level);
+                        const isPast =
+                          (step.approval_level < request.current_level ||
+                            !!approval) &&
+                          !isRejected;
+                        const isCurrent =
+                          step.approval_level === request.current_level &&
+                          !approval &&
+                          !isRejected;
+                        const isLast = index === arr.length - 1;
+
+                        let dotClass = "bg-muted border-border/50";
+                        let lineClass = "bg-border";
+                        let label = "Upcoming";
+                        let labelClass = "text-muted-foreground/50";
+                        let nameClass = "text-muted-foreground";
+                        let levelClass = "text-muted-foreground/40";
+
+                        if (isRejected) {
+                          dotClass =
+                            "bg-destructive border-destructive ring-4 ring-destructive/10";
+                          label = "Rejected";
+                          labelClass = "text-destructive font-bold";
+                          nameClass = "text-destructive font-semibold";
+                          levelClass = "text-destructive/60";
+                        } else if (isPast) {
+                          dotClass =
+                            "bg-emerald-500 border-emerald-500 ring-4 ring-emerald-500/20";
+                          lineClass = "bg-emerald-500/40";
+                          label = "Approved";
+                          labelClass =
+                            "text-emerald-600 dark:text-emerald-400 font-bold";
+                          nameClass = "text-foreground font-medium";
+                          levelClass =
+                            "text-emerald-600/50 dark:text-emerald-400/50";
+                        } else if (isCurrent) {
+                          dotClass =
+                            "bg-orange-500 border-orange-500 ring-4 ring-orange-500/20 animate-pulse";
+                          label = "Pending";
+                          labelClass =
+                            "text-orange-600 dark:text-orange-500 font-bold";
+                          nameClass = "text-foreground font-semibold";
+                          levelClass = "text-orange-500/60";
+                        }
+
+                        return (
+                          <div
+                            key={index}
+                            className="relative flex gap-5 pb-7 last:pb-0 group"
+                          >
+                            <div className="relative flex flex-col items-center">
+                              <div
+                                className={`relative h-2.5 w-2.5 rounded-full border transition-all z-10 ${dotClass}`}
+                              />
+                              {!isLast && (
+                                <div
+                                  className={`flex-1 w-px mt-1.5 ${lineClass}`}
+                                />
+                              )}
+                            </div>
+                            <div className="flex-1 -mt-0.5 min-w-0 pb-1">
+                              <div className="flex items-baseline justify-between gap-3">
+                                <p
+                                  className={`text-sm truncate transition-colors ${nameClass}`}
+                                >
+                                  {step.user?.name || "System"}
+                                </p>
+                                <span
+                                  className={`text-[10px] tabular-nums font-bold tracking-wider shrink-0 ${levelClass}`}
+                                >
+                                  L{step.approval_level}
+                                </span>
+                              </div>
+                              <p
+                                className={`text-[10px] mt-0.5 uppercase tracking-[0.15em] ${labelClass}`}
+                              >
+                                {label}
+                              </p>
+                              {approval && (
+                                <div className="mt-3 space-y-1.5">
+                                  {approval.comment && (
+                                    <p className="text-[13px] leading-relaxed text-muted-foreground/90 border-l border-border/70 pl-3 line-clamp-3">
+                                      {approval.comment}
+                                    </p>
+                                  )}
+                                  <p className="text-[10px] tabular-nums text-muted-foreground/50 tracking-wide">
+                                    {moment(approval.created_at).format(
+                                      "MMM DD, YYYY · h:mm A",
+                                    )}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+                <CardHeader className="pb-3 border-b border-muted/20">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <Paperclip className="h-5 w-5 text-primary" />
+                      Attachments
+                    </CardTitle>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] font-bold bg-primary/10 text-primary hover:bg-primary/20 border-none"
+                    >
+                      {request.attachments?.length || 0} Files
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {request.attachments && request.attachments.length > 0 ? (
+                    <div className="space-y-3">
+                      {request.attachments.map((file: any, index: number) => (
+                        <a
+                          key={index}
+                          href={file.file_path}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 rounded-xl bg-background border border-muted shadow-sm hover:border-primary/50 hover:shadow-md transition-all group"
+                        >
+                          <div className="p-2 bg-muted rounded-lg group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                            <FileText className="h-4 w-4" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-bold truncate pr-2">
+                              {file.file_name}
+                            </span>
+                            <span className="text-[10px] text-muted-foreground font-medium uppercase">
+                              Download File
+                            </span>
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 border-2 border-dashed rounded-xl border-muted">
+                      <Paperclip className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                      <p className="text-xs text-muted-foreground font-medium">
+                        No attachments provided.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </Main>
+    </div>
+  );
+}
+
+function DetailItem({
+  label,
+  value,
+  icon,
+}: {
+  label: string;
+  value?: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="flex gap-4 group">
+      <div className="p-2.5 rounded-xl bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors h-fit">
+        {icon}
+      </div>
+      <div className="space-y-0.5">
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+          {label}
+        </p>
+        <p className="text-sm font-bold text-foreground drop-shadow-sm">
+          {value || "N/A"}
+        </p>
+      </div>
+    </div>
+  );
+}

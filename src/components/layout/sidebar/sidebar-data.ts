@@ -1,8 +1,8 @@
 import {
-  Container,
+  GitPullRequest,
+  History,
   LayoutDashboard,
-  Logs,
-  SquareStack,
+  ScrollText,
   UserCog,
 } from "lucide-react";
 import type { SidebarData } from "./types";
@@ -20,27 +20,27 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: "Dashboard",
-          url: "/asset-inventory",
+          url: "/purchase-request",
           icon: LayoutDashboard,
         },
         {
-          title: "Assets",
-          url: "/asset-inventory/assets",
-          icon: Container,
+          title: "Requests",
+          url: "/purchase-request/requests",
+          icon: ScrollText,
         },
         {
-          title: "Asset Logs",
-          url: "/asset-inventory/asset-logs",
-          icon: Logs,
+          title: "History",
+          url: "/history",
+          icon: History,
         },
         {
-          title: "Categories",
-          url: "/asset-inventory/categories",
-          icon: SquareStack,
+          title: "Timeline",
+          url: "/purchase-request/timeline",
+          icon: GitPullRequest,
         },
         {
           title: "Users",
-          url: "/asset-inventory/users",
+          url: "/purchase-request/users",
           icon: UserCog,
         },
       ],

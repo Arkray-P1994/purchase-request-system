@@ -14,40 +14,48 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { AssetFormValues, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { useState } from "react";
-import type { UseFormReturn } from "react-hook-form";
+import type { Control, FieldValues, Path } from "react-hook-form";
 
-interface DatePickerProps {
-  form: UseFormReturn<AssetFormValues>;
+interface DatePickerProps<T extends FieldValues> {
+  control: Control<any>;
+  name: Path<T>;
+  label?: string;
+  placeholder?: string;
 }
 
-export function DatePicker({ form }: DatePickerProps) {
+export function DatePicker<T extends FieldValues>({ 
+  control, 
+  name, 
+  label, 
+  placeholder 
+}: DatePickerProps<T>) {
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   return (
     <FormField
-      control={form.control}
-      name="date"
+      control={control}
+      name={name}
       render={({ field }) => (
         <FormItem className="flex flex-col">
-          <FormLabel className="text-xs font-semibold mt-2">Date</FormLabel>
+          {label && <FormLabel className="text-xs font-semibold">{label}</FormLabel>}
           <Popover open={calendarOpen} onOpenChange={setCalendarOpen} modal>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full pl-3  text-left font-normal",
+                    "w-full pl-3 text-left font-normal border-muted-foreground h-9",
                     !field.value && "text-muted-foreground"
                   )}
                 >
                   {field.value ? (
                     format(field.value, "PPP")
                   ) : (
-                    <span>Pick a date</span>
+                    <span>{placeholder || "Pick a date"}</span>
                   )}
                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                 </Button>
@@ -62,6 +70,7 @@ export function DatePicker({ form }: DatePickerProps) {
                   setCalendarOpen(false);
                 }}
                 captionLayout="dropdown"
+                autoFocus
               />
             </PopoverContent>
           </Popover>

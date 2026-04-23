@@ -9,18 +9,30 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PurchaseRequestRouteRouteImport } from './routes/purchase-request/route'
 import { Route as AssetInventoryRouteRouteImport } from './routes/asset-inventory/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as PurchaseRequestIndexRouteImport } from './routes/purchase-request/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as AssetInventoryIndexRouteImport } from './routes/asset-inventory/index'
+import { Route as PurchaseRequestRequestsIndexRouteImport } from './routes/purchase-request/requests/index'
+import { Route as PurchaseRequestDashboardIndexRouteImport } from './routes/purchase-request/dashboard/index'
 import { Route as AssetInventoryUsersIndexRouteImport } from './routes/asset-inventory/users/index'
 import { Route as AssetInventoryDashboardIndexRouteImport } from './routes/asset-inventory/dashboard/index'
 import { Route as AssetInventoryCategoriesIndexRouteImport } from './routes/asset-inventory/categories/index'
 import { Route as AssetInventoryAssetsIndexRouteImport } from './routes/asset-inventory/assets/index'
 import { Route as AssetInventoryAssetLogsIndexRouteImport } from './routes/asset-inventory/asset-logs/index'
+import { Route as PurchaseRequestRequestsCreateRouteImport } from './routes/purchase-request/requests/create'
 import { Route as AssetInventoryAssetsIdRouteImport } from './routes/asset-inventory/assets/$id'
+import { Route as PurchaseRequestRequestsRequestIdIndexRouteImport } from './routes/purchase-request/requests/$requestId.index'
 import { Route as AssetInventoryAssetsPrintIndexRouteImport } from './routes/asset-inventory/assets/print/index'
+import { Route as PurchaseRequestRequestsRequestIdEditRouteImport } from './routes/purchase-request/requests/$requestId.edit'
 
+const PurchaseRequestRouteRoute = PurchaseRequestRouteRouteImport.update({
+  id: '/purchase-request',
+  path: '/purchase-request',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AssetInventoryRouteRoute = AssetInventoryRouteRouteImport.update({
   id: '/asset-inventory',
   path: '/asset-inventory',
@@ -30,6 +42,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PurchaseRequestIndexRoute = PurchaseRequestIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PurchaseRequestRouteRoute,
 } as any)
 const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/login/',
@@ -41,6 +58,18 @@ const AssetInventoryIndexRoute = AssetInventoryIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AssetInventoryRouteRoute,
 } as any)
+const PurchaseRequestRequestsIndexRoute =
+  PurchaseRequestRequestsIndexRouteImport.update({
+    id: '/requests/',
+    path: '/requests/',
+    getParentRoute: () => PurchaseRequestRouteRoute,
+  } as any)
+const PurchaseRequestDashboardIndexRoute =
+  PurchaseRequestDashboardIndexRouteImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
+    getParentRoute: () => PurchaseRequestRouteRoute,
+  } as any)
 const AssetInventoryUsersIndexRoute =
   AssetInventoryUsersIndexRouteImport.update({
     id: '/users/',
@@ -71,106 +100,172 @@ const AssetInventoryAssetLogsIndexRoute =
     path: '/asset-logs/',
     getParentRoute: () => AssetInventoryRouteRoute,
   } as any)
+const PurchaseRequestRequestsCreateRoute =
+  PurchaseRequestRequestsCreateRouteImport.update({
+    id: '/requests/create',
+    path: '/requests/create',
+    getParentRoute: () => PurchaseRequestRouteRoute,
+  } as any)
 const AssetInventoryAssetsIdRoute = AssetInventoryAssetsIdRouteImport.update({
   id: '/assets/$id',
   path: '/assets/$id',
   getParentRoute: () => AssetInventoryRouteRoute,
 } as any)
+const PurchaseRequestRequestsRequestIdIndexRoute =
+  PurchaseRequestRequestsRequestIdIndexRouteImport.update({
+    id: '/requests/$requestId/',
+    path: '/requests/$requestId/',
+    getParentRoute: () => PurchaseRequestRouteRoute,
+  } as any)
 const AssetInventoryAssetsPrintIndexRoute =
   AssetInventoryAssetsPrintIndexRouteImport.update({
     id: '/assets/print/',
     path: '/assets/print/',
     getParentRoute: () => AssetInventoryRouteRoute,
   } as any)
+const PurchaseRequestRequestsRequestIdEditRoute =
+  PurchaseRequestRequestsRequestIdEditRouteImport.update({
+    id: '/requests/$requestId/edit',
+    path: '/requests/$requestId/edit',
+    getParentRoute: () => PurchaseRequestRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/asset-inventory': typeof AssetInventoryRouteRouteWithChildren
+  '/purchase-request': typeof PurchaseRequestRouteRouteWithChildren
   '/asset-inventory/': typeof AssetInventoryIndexRoute
   '/login': typeof LoginIndexRoute
+  '/purchase-request/': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
+  '/purchase-request/requests/create': typeof PurchaseRequestRequestsCreateRoute
   '/asset-inventory/asset-logs': typeof AssetInventoryAssetLogsIndexRoute
   '/asset-inventory/assets': typeof AssetInventoryAssetsIndexRoute
   '/asset-inventory/categories': typeof AssetInventoryCategoriesIndexRoute
   '/asset-inventory/dashboard': typeof AssetInventoryDashboardIndexRoute
   '/asset-inventory/users': typeof AssetInventoryUsersIndexRoute
+  '/purchase-request/dashboard': typeof PurchaseRequestDashboardIndexRoute
+  '/purchase-request/requests': typeof PurchaseRequestRequestsIndexRoute
+  '/purchase-request/requests/$requestId/edit': typeof PurchaseRequestRequestsRequestIdEditRoute
   '/asset-inventory/assets/print': typeof AssetInventoryAssetsPrintIndexRoute
+  '/purchase-request/requests/$requestId': typeof PurchaseRequestRequestsRequestIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/asset-inventory': typeof AssetInventoryIndexRoute
   '/login': typeof LoginIndexRoute
+  '/purchase-request': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
+  '/purchase-request/requests/create': typeof PurchaseRequestRequestsCreateRoute
   '/asset-inventory/asset-logs': typeof AssetInventoryAssetLogsIndexRoute
   '/asset-inventory/assets': typeof AssetInventoryAssetsIndexRoute
   '/asset-inventory/categories': typeof AssetInventoryCategoriesIndexRoute
   '/asset-inventory/dashboard': typeof AssetInventoryDashboardIndexRoute
   '/asset-inventory/users': typeof AssetInventoryUsersIndexRoute
+  '/purchase-request/dashboard': typeof PurchaseRequestDashboardIndexRoute
+  '/purchase-request/requests': typeof PurchaseRequestRequestsIndexRoute
+  '/purchase-request/requests/$requestId/edit': typeof PurchaseRequestRequestsRequestIdEditRoute
   '/asset-inventory/assets/print': typeof AssetInventoryAssetsPrintIndexRoute
+  '/purchase-request/requests/$requestId': typeof PurchaseRequestRequestsRequestIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/asset-inventory': typeof AssetInventoryRouteRouteWithChildren
+  '/purchase-request': typeof PurchaseRequestRouteRouteWithChildren
   '/asset-inventory/': typeof AssetInventoryIndexRoute
   '/login/': typeof LoginIndexRoute
+  '/purchase-request/': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
+  '/purchase-request/requests/create': typeof PurchaseRequestRequestsCreateRoute
   '/asset-inventory/asset-logs/': typeof AssetInventoryAssetLogsIndexRoute
   '/asset-inventory/assets/': typeof AssetInventoryAssetsIndexRoute
   '/asset-inventory/categories/': typeof AssetInventoryCategoriesIndexRoute
   '/asset-inventory/dashboard/': typeof AssetInventoryDashboardIndexRoute
   '/asset-inventory/users/': typeof AssetInventoryUsersIndexRoute
+  '/purchase-request/dashboard/': typeof PurchaseRequestDashboardIndexRoute
+  '/purchase-request/requests/': typeof PurchaseRequestRequestsIndexRoute
+  '/purchase-request/requests/$requestId/edit': typeof PurchaseRequestRequestsRequestIdEditRoute
   '/asset-inventory/assets/print/': typeof AssetInventoryAssetsPrintIndexRoute
+  '/purchase-request/requests/$requestId/': typeof PurchaseRequestRequestsRequestIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/asset-inventory'
+    | '/purchase-request'
     | '/asset-inventory/'
     | '/login'
+    | '/purchase-request/'
     | '/asset-inventory/assets/$id'
+    | '/purchase-request/requests/create'
     | '/asset-inventory/asset-logs'
     | '/asset-inventory/assets'
     | '/asset-inventory/categories'
     | '/asset-inventory/dashboard'
     | '/asset-inventory/users'
+    | '/purchase-request/dashboard'
+    | '/purchase-request/requests'
+    | '/purchase-request/requests/$requestId/edit'
     | '/asset-inventory/assets/print'
+    | '/purchase-request/requests/$requestId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/asset-inventory'
     | '/login'
+    | '/purchase-request'
     | '/asset-inventory/assets/$id'
+    | '/purchase-request/requests/create'
     | '/asset-inventory/asset-logs'
     | '/asset-inventory/assets'
     | '/asset-inventory/categories'
     | '/asset-inventory/dashboard'
     | '/asset-inventory/users'
+    | '/purchase-request/dashboard'
+    | '/purchase-request/requests'
+    | '/purchase-request/requests/$requestId/edit'
     | '/asset-inventory/assets/print'
+    | '/purchase-request/requests/$requestId'
   id:
     | '__root__'
     | '/'
     | '/asset-inventory'
+    | '/purchase-request'
     | '/asset-inventory/'
     | '/login/'
+    | '/purchase-request/'
     | '/asset-inventory/assets/$id'
+    | '/purchase-request/requests/create'
     | '/asset-inventory/asset-logs/'
     | '/asset-inventory/assets/'
     | '/asset-inventory/categories/'
     | '/asset-inventory/dashboard/'
     | '/asset-inventory/users/'
+    | '/purchase-request/dashboard/'
+    | '/purchase-request/requests/'
+    | '/purchase-request/requests/$requestId/edit'
     | '/asset-inventory/assets/print/'
+    | '/purchase-request/requests/$requestId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AssetInventoryRouteRoute: typeof AssetInventoryRouteRouteWithChildren
+  PurchaseRequestRouteRoute: typeof PurchaseRequestRouteRouteWithChildren
   LoginIndexRoute: typeof LoginIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/purchase-request': {
+      id: '/purchase-request'
+      path: '/purchase-request'
+      fullPath: '/purchase-request'
+      preLoaderRoute: typeof PurchaseRequestRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/asset-inventory': {
       id: '/asset-inventory'
       path: '/asset-inventory'
@@ -185,6 +280,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/purchase-request/': {
+      id: '/purchase-request/'
+      path: '/'
+      fullPath: '/purchase-request/'
+      preLoaderRoute: typeof PurchaseRequestIndexRouteImport
+      parentRoute: typeof PurchaseRequestRouteRoute
+    }
     '/login/': {
       id: '/login/'
       path: '/login'
@@ -198,6 +300,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/asset-inventory/'
       preLoaderRoute: typeof AssetInventoryIndexRouteImport
       parentRoute: typeof AssetInventoryRouteRoute
+    }
+    '/purchase-request/requests/': {
+      id: '/purchase-request/requests/'
+      path: '/requests'
+      fullPath: '/purchase-request/requests'
+      preLoaderRoute: typeof PurchaseRequestRequestsIndexRouteImport
+      parentRoute: typeof PurchaseRequestRouteRoute
+    }
+    '/purchase-request/dashboard/': {
+      id: '/purchase-request/dashboard/'
+      path: '/dashboard'
+      fullPath: '/purchase-request/dashboard'
+      preLoaderRoute: typeof PurchaseRequestDashboardIndexRouteImport
+      parentRoute: typeof PurchaseRequestRouteRoute
     }
     '/asset-inventory/users/': {
       id: '/asset-inventory/users/'
@@ -234,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssetInventoryAssetLogsIndexRouteImport
       parentRoute: typeof AssetInventoryRouteRoute
     }
+    '/purchase-request/requests/create': {
+      id: '/purchase-request/requests/create'
+      path: '/requests/create'
+      fullPath: '/purchase-request/requests/create'
+      preLoaderRoute: typeof PurchaseRequestRequestsCreateRouteImport
+      parentRoute: typeof PurchaseRequestRouteRoute
+    }
     '/asset-inventory/assets/$id': {
       id: '/asset-inventory/assets/$id'
       path: '/assets/$id'
@@ -241,12 +364,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssetInventoryAssetsIdRouteImport
       parentRoute: typeof AssetInventoryRouteRoute
     }
+    '/purchase-request/requests/$requestId/': {
+      id: '/purchase-request/requests/$requestId/'
+      path: '/requests/$requestId'
+      fullPath: '/purchase-request/requests/$requestId'
+      preLoaderRoute: typeof PurchaseRequestRequestsRequestIdIndexRouteImport
+      parentRoute: typeof PurchaseRequestRouteRoute
+    }
     '/asset-inventory/assets/print/': {
       id: '/asset-inventory/assets/print/'
       path: '/assets/print'
       fullPath: '/asset-inventory/assets/print'
       preLoaderRoute: typeof AssetInventoryAssetsPrintIndexRouteImport
       parentRoute: typeof AssetInventoryRouteRoute
+    }
+    '/purchase-request/requests/$requestId/edit': {
+      id: '/purchase-request/requests/$requestId/edit'
+      path: '/requests/$requestId/edit'
+      fullPath: '/purchase-request/requests/$requestId/edit'
+      preLoaderRoute: typeof PurchaseRequestRequestsRequestIdEditRouteImport
+      parentRoute: typeof PurchaseRequestRouteRoute
     }
   }
 }
@@ -276,9 +413,33 @@ const AssetInventoryRouteRouteChildren: AssetInventoryRouteRouteChildren = {
 const AssetInventoryRouteRouteWithChildren =
   AssetInventoryRouteRoute._addFileChildren(AssetInventoryRouteRouteChildren)
 
+interface PurchaseRequestRouteRouteChildren {
+  PurchaseRequestIndexRoute: typeof PurchaseRequestIndexRoute
+  PurchaseRequestRequestsCreateRoute: typeof PurchaseRequestRequestsCreateRoute
+  PurchaseRequestDashboardIndexRoute: typeof PurchaseRequestDashboardIndexRoute
+  PurchaseRequestRequestsIndexRoute: typeof PurchaseRequestRequestsIndexRoute
+  PurchaseRequestRequestsRequestIdEditRoute: typeof PurchaseRequestRequestsRequestIdEditRoute
+  PurchaseRequestRequestsRequestIdIndexRoute: typeof PurchaseRequestRequestsRequestIdIndexRoute
+}
+
+const PurchaseRequestRouteRouteChildren: PurchaseRequestRouteRouteChildren = {
+  PurchaseRequestIndexRoute: PurchaseRequestIndexRoute,
+  PurchaseRequestRequestsCreateRoute: PurchaseRequestRequestsCreateRoute,
+  PurchaseRequestDashboardIndexRoute: PurchaseRequestDashboardIndexRoute,
+  PurchaseRequestRequestsIndexRoute: PurchaseRequestRequestsIndexRoute,
+  PurchaseRequestRequestsRequestIdEditRoute:
+    PurchaseRequestRequestsRequestIdEditRoute,
+  PurchaseRequestRequestsRequestIdIndexRoute:
+    PurchaseRequestRequestsRequestIdIndexRoute,
+}
+
+const PurchaseRequestRouteRouteWithChildren =
+  PurchaseRequestRouteRoute._addFileChildren(PurchaseRequestRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssetInventoryRouteRoute: AssetInventoryRouteRouteWithChildren,
+  PurchaseRequestRouteRoute: PurchaseRequestRouteRouteWithChildren,
   LoginIndexRoute: LoginIndexRoute,
 }
 export const routeTree = rootRouteImport

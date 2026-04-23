@@ -12,7 +12,7 @@ import {
 type TopNavProps = React.HTMLAttributes<HTMLElement> & {
   links: {
     title: string;
-    href: string;
+    url: string;
     isActive: boolean;
     disabled?: boolean;
   }[];
@@ -28,13 +28,19 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
               <Menu />
             </Button>
           </DropdownMenuTrigger>
+
           <DropdownMenuContent side="bottom" align="start">
-            {links.map(({ title, href, isActive, disabled }) => (
-              <DropdownMenuItem key={`${title}-${href}`} asChild>
+            {links.map(({ title, url, isActive, disabled }) => (
+              <DropdownMenuItem key={`${title}-${url}`} asChild>
                 <Link
-                  to={href}
-                  className={!isActive ? "text-muted-foreground" : ""}
+                  to={url}
                   disabled={disabled}
+                  aria-current={isActive ? "page" : undefined}
+                  className={cn(
+                    "text-sm",
+                    !isActive && "text-muted-foreground",
+                    disabled && "pointer-events-none opacity-50",
+                  )}
                 >
                   {title}
                 </Link>
@@ -47,18 +53,21 @@ export function TopNav({ className, links, ...props }: TopNavProps) {
       <nav
         className={cn(
           "hidden items-center space-x-4 lg:flex lg:space-x-4 xl:space-x-6",
-          className
+          className,
         )}
         {...props}
       >
-        {links.map(({ title, href, isActive, disabled }) => (
+        {links.map(({ title, url, isActive, disabled }) => (
           <Link
-            key={`${title}-${href}`}
-            to={href}
+            key={`${title}-${url}`}
+            to={url}
             disabled={disabled}
-            className={`hover:text-primary text-sm font-medium transition-colors ${
-              isActive ? "" : "text-muted-foreground"
-            }`}
+            aria-current={isActive ? "page" : undefined}
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-primary",
+              !isActive && "text-muted-foreground",
+              disabled && "pointer-events-none opacity-50",
+            )}
           >
             {title}
           </Link>

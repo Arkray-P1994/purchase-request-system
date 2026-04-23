@@ -21,10 +21,14 @@ type BaseNavItem = {
 type NavLink = BaseNavItem & {
   url: LinkProps['to'] | (string & {})
   items?: never
+  search?: Record<string, any>
 }
 
 type NavCollapsible = BaseNavItem & {
-  items: (BaseNavItem & { url: LinkProps['to'] | (string & {}) })[]
+  items: (BaseNavItem & { 
+    url: LinkProps['to'] | (string & {})
+    search?: Record<string, any>
+  })[]
   url?: never
 }
 

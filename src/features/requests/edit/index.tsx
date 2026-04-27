@@ -26,6 +26,17 @@ export function EditRequestPage() {
     );
   }
 
+  if (request.status_id?.name !== "Pending") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <h2 className="text-2xl font-bold">Editing Forbidden</h2>
+        <p className="text-muted-foreground text-center">
+          Only requests with <span className="font-bold text-orange-500">Pending</span> status can be edited.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <>
       <Header fixed>

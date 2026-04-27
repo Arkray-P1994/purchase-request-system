@@ -36,6 +36,7 @@ export const requestSchema = z.object({
   workflow: z.array(z.object({
     id: z.number().optional(),
     user: z.object({
+      id: z.number().optional(),
       name: z.string(),
     }).optional(),
     approval_level: z.number(),

@@ -2,9 +2,9 @@ import { DataTableColumnHeader } from "@/components/data-table/column-header";
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { DataTableRowActions } from "./data-table-row-actions";
-import { Vendor } from "./schema";
+import { User } from "../schema";
 
-export const Columns: ColumnDef<Vendor>[] = [
+export const Columns: ColumnDef<User>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (
@@ -32,26 +32,33 @@ export const Columns: ColumnDef<Vendor>[] = [
       <span className="truncate font-medium">{row.getValue("username")}</span>
     ),
   },
-
   {
-    accessorKey: "team_name",
+    accessorKey: "email",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Team" />
+      <DataTableColumnHeader column={column} title="Email" />
     ),
     cell: ({ row }) => (
-      <span className="truncate">{row.getValue("team_name")}</span>
+      <span className="truncate">{row.getValue("email")}</span>
     ),
   },
   {
-    accessorKey: "position",
+    accessorKey: "role",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Position" />
+      <DataTableColumnHeader column={column} title="Role" />
     ),
     cell: ({ row }) => (
-      <span className="truncate">{row.getValue("position")}</span>
+      <span className="truncate capitalize">{row.getValue("role")}</span>
     ),
   },
-  // Uncomment if you need row actions
+  {
+    accessorKey: "team_names",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Teams" />
+    ),
+    cell: ({ row }) => (
+      <span className="truncate">{row.getValue("team_names") || "None"}</span>
+    ),
+  },
   {
     id: "actions",
     cell: ({ row }) => <DataTableRowActions row={row} />,

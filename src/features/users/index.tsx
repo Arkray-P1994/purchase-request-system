@@ -7,9 +7,13 @@ import { Main } from "@/components/main";
 import { ModeToggle } from "@/components/toggle";
 import { useQueryState } from "nuqs";
 import { DataTable } from "./components/table";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
+import { useState } from "react";
+import { CreateUserForm } from "./components/forms/create-form";
 
 export function UsersPage() {
-  const search = useSearch({ from: "/asset-inventory/users/" }) as {
+  const search = useSearch({ from: "/purchase-request/users/" }) as {
     filter?: string;
   };
   const [page] = useQueryState("page", { defaultValue: "1" });
@@ -24,6 +28,8 @@ export function UsersPage() {
     remarks: String(remarks),
   });
 
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+
   return (
     <>
       <Header fixed>
@@ -37,20 +43,21 @@ export function UsersPage() {
           <div>
             <h2 className="text-2xl font-bold tracking-tight">User List</h2>
             <p className="text-muted-foreground">
-              Here&apos;s a list of assets.
+              Manage system users and their team assignments.
             </p>
           </div>
+          <div className="flex gap-2">
+            <Button onClick={() => setIsCreateOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" /> Add User
+            </Button>
+          </div>
         </div>
-        {/* {data.data.map((asset) => (
-          <AssetTag asset={asset} />
-        ))} */}
 
-        {/* <TasksPrimaryButtons /> */}
-
-        <div></div>
         <div className="-mx-4 flex-1 overflow-disable px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
           <DataTable data={data ?? []} />
         </div>
+
+        <CreateUserForm open={isCreateOpen} onOpenChange={setIsCreateOpen} />
       </Main>
     </>
   );

@@ -17,11 +17,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Trash2 } from "lucide-react";
-import { useDeleteUser } from "../actions/delete";
+import { useDeleteUser } from "../actions/mutate-users";
 
-export function DeleteUser({ Id }: { Id: String | Number }) {
+export function DeleteUser({ Id }: { Id: string | number }) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
-  const { trigger } = useDeleteUser({ id: Id });
+  const { trigger } = useDeleteUser();
   // Control tooltip manually so it only opens on hover
   const [tooltipOpen, setTooltipOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
@@ -45,7 +45,7 @@ export function DeleteUser({ Id }: { Id: String | Number }) {
               ref={triggerRef}
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 text-red-500"
+              className="cursor-pointer h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 text-red-500"
               aria-label="Delete Asset"
               // Only open on hover/pointer; keep closed on focus
               onMouseEnter={() => setTooltipOpen(true)}
@@ -88,7 +88,7 @@ export function DeleteUser({ Id }: { Id: String | Number }) {
                 e.preventDefault();
 
                 try {
-                  await trigger();
+                  await trigger({ id: Id });
                   setDialogOpen(false);
                 } catch (err) {}
               }}

@@ -22,18 +22,18 @@ import {
 } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Columns as columns } from "./columns";
-import { Vendor } from "./schema";
+import { User } from "../schema";
 import { DataTableUserToolbar } from "./toolbar";
 import { DataTablePagination } from "@/components/data-table";
 
-const route = getRouteApi("/asset-inventory/users/");
+const route = getRouteApi("/purchase-request/users/");
 
 /**
  * 1. Define the Response Structure
  * This matches your PHP Controller output
  */
 export type ApiResponse = {
-  data: Vendor[];
+  data: User[];
   uniques?: {
     remarks: string[];
     location: string[];

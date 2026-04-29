@@ -1,12 +1,10 @@
 import { DataTableViewOptions } from "@/components/data-table";
-import { LedgerActionsSheet } from "@/components/sheet/actions-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { type Table } from "@tanstack/react-table";
 import { debounce, useQueryState } from "nuqs";
-import { useState } from "react";
-import CreateUserForm from "./forms/insert";
+
 type DataTableToolbarProps<TData> = {
   table: Table<TData>;
   searchPlaceholder?: string;
@@ -17,8 +15,6 @@ export function DataTableUserToolbar<TData>({
   table,
   searchPlaceholder = "Filter...",
 }: DataTableToolbarProps<TData>) {
-  const [open, setOpen] = useState(false);
-
   // 1. Explicitly track pageSize.
   // We don't use the setter, but this "registers" the param with nuqs in this component.
   // const [pageSize] = useQueryState("pageSize", parseAsString.withDefault("10"));
@@ -79,14 +75,6 @@ export function DataTableUserToolbar<TData>({
       </div>
       <div className="flex gap-2">
         <DataTableViewOptions table={table} />
-        <LedgerActionsSheet
-          title="Create New User"
-          buttonName="Create User"
-          open={open}
-          setOpen={setOpen}
-        >
-          <CreateUserForm action={"create"} setOpen={setOpen} />
-        </LedgerActionsSheet>
       </div>
     </div>
   );

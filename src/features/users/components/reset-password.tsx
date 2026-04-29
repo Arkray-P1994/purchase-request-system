@@ -19,7 +19,7 @@ import {
 import { RotateCcw } from "lucide-react";
 import { useResetPassword } from "../actions/reset";
 
-export function ResetPassword({ Id }: { Id: String | Number }) {
+export function ResetPassword({ Id }: { Id: string | number }) {
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const { trigger } = useResetPassword({ id: Id });
   // Control tooltip manually so it only opens on hover
@@ -45,7 +45,7 @@ export function ResetPassword({ Id }: { Id: String | Number }) {
               ref={triggerRef}
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-red-50 hover:text-yellow-600 text-yellow-500"
+              className="cursor-pointer h-8 w-8 p-0 hover:bg-yellow-50 hover:text-yellow-600 text-yellow-500"
               aria-label="Delete Asset"
               // Only open on hover/pointer; keep closed on focus
               onMouseEnter={() => setTooltipOpen(true)}

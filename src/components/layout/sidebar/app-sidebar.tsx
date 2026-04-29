@@ -21,8 +21,8 @@ export function AppSidebar() {
     items: group.items.filter((item) => {
       // 1. If it's the "Users" item...
       if (item.title === "Users") {
-        // 2. ONLY show it if the user position is "admin"
-        return user?.user.position === "superadmin";
+        // 2. ONLY show it if the user position is "admin" or "superadmin"
+        return user?.user?.position === "superadmin" || user?.user?.position === "admin" || user?.user?.role === "admin";
       }
       // 3. Show all other items normally
       return true;

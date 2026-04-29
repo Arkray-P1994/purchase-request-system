@@ -50,7 +50,7 @@ export function DataTableRowActions({
             >
               <Button
                 variant="ghost"
-                className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors"
+                className="cursor-pointer h-8 w-8 p-0 hover:bg-blue-50 hover:text-blue-600 text-blue-500"
               >
                 <Eye className="h-4 w-4" />
               </Button>
@@ -71,7 +71,7 @@ export function DataTableRowActions({
                 >
                   <Button
                     variant="ghost"
-                    className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary text-muted-foreground transition-colors"
+                    className="cursor-pointer h-8 w-8 p-0 hover:bg-green-50 hover:text-green-600 text-green-500"
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -86,7 +86,7 @@ export function DataTableRowActions({
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive text-muted-foreground transition-colors"
+                  className="cursor-pointer h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 text-red-500"
                   onClick={() => setOpenDelete(true)}
                 >
                   <Trash2 className="h-4 w-4" />

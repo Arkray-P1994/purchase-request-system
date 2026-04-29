@@ -34,7 +34,7 @@ export function Header({
     .flatMap((group) => group.items)
     .filter((item) => {
       if (item.title === "Users") {
-        return user?.user.position === "superadmin";
+        return user?.user?.position === "superadmin" || user?.user?.position === "admin" || user?.user?.role === "admin";
       }
       return true;
     })

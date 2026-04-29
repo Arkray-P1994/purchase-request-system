@@ -71,6 +71,10 @@ export function DataTable<TData, TValue>({
   renderToolbar,
   storageKey = "data-table",
 }: DataTableProps<TData, TValue>) {
+  if (!urlState) {
+    throw new Error("DataTable component requires 'urlState' prop. Please use the useDataTableState hook.");
+  }
+
   const isBrowser = typeof window !== "undefined";
   const tableData = useMemo(() => data?.data || [], [data]);
 

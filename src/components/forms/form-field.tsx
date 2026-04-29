@@ -27,7 +27,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Button } from "@/components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Check, ChevronsUpDown, X } from "lucide-react";
 import * as React from "react";
 
 interface FieldProps<T extends FieldValues> {
@@ -37,7 +38,7 @@ interface FieldProps<T extends FieldValues> {
   placeholder?: string;
   description?: string;
   type?: "text" | "number" | "email" | "password";
-  variant?: "input" | "textarea" | "select" | "select_by_name" | "select_by_id" | "combobox";
+  variant?: "input" | "textarea" | "select" | "select_by_name" | "select_by_id" | "combobox" | "multi-select";
   rows?: number;
   options?: SelectOption[];
   selectOptions?: SelectOptionByName[] | SelectOption[];
@@ -152,6 +153,14 @@ export function Field<T extends FieldValues>({
                 className={className}
                 onSelect={onSelect}
               />
+            ) : variant === "multi-select" ? (
+              <MultiSelectField
+                field={field}
+                placeholder={placeholder}
+                label={label}
+                options={options}
+                className={className}
+              />
             ) : (
               <Input
                 type={type}
@@ -202,7 +211,7 @@ function ComboboxField({
   const [open, setOpen] = React.useState(false);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -242,6 +251,110 @@ function ComboboxField({
                     className={cn(
                       "mr-2 h-4 w-4",
                       option.name === field.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function MultiSelectField({
+  field,
+  placeholder,
+  label,
+  options,
+  className,
+}: {
+  field: any;
+  placeholder?: string;
+  label: string;
+  options: any[];
+  className?: string;
+}) {
+  const [open, setOpen] = React.useState(false);
+  const selected = field.value || [];
+
+  const handleUnselect = (item: any) => {
+    field.onChange(selected.filter((i: any) => i !== item));
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            "w-full justify-between border-muted-foreground h-auto min-h-10 py-2 px-3 text-left font-normal",
+            className
+          )}
+        >
+          <div className="flex flex-wrap gap-1">
+            {selected.length > 0 ? (
+              selected.map((item: any) => {
+                const option = options.find((o) => o.id === item);
+                return (
+                  <Badge variant="secondary" key={item} className="mr-1 font-normal">
+                    {option ? option.name : item}
+                    <button
+                      type="button"
+                      className="ml-1 ring-offset-background rounded-full outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleUnselect(item);
+                        }
+                      }}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleUnselect(item);
+                      }}
+                    >
+                      <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+                    </button>
+                  </Badge>
+                );
+              })
+            ) : (
+              <span className="text-muted-foreground">{placeholder}</span>
+            )}
+          </div>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+        <Command>
+          <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
+          <CommandList>
+            <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
+            <CommandGroup>
+              {options.map((option) => (
+                <CommandItem
+                  key={option.id}
+                  value={option.name}
+                  onSelect={() => {
+                    if (selected.includes(option.id)) {
+                      field.onChange(selected.filter((i: any) => i !== option.id));
+                    } else {
+                      field.onChange([...selected, option.id]);
+                    }
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selected.includes(option.id) ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {option.name}

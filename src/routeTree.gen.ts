@@ -24,6 +24,7 @@ import { Route as AssetInventoryCategoriesIndexRouteImport } from './routes/asse
 import { Route as AssetInventoryAssetsIndexRouteImport } from './routes/asset-inventory/assets/index'
 import { Route as AssetInventoryAssetLogsIndexRouteImport } from './routes/asset-inventory/asset-logs/index'
 import { Route as PurchaseRequestUsersUserIdRouteImport } from './routes/purchase-request/users/$userId'
+import { Route as PurchaseRequestSettingsThemeRouteImport } from './routes/purchase-request/settings/theme'
 import { Route as AssetInventoryAssetsIdRouteImport } from './routes/asset-inventory/assets/$id'
 import { Route as AssetInventoryAssetsPrintIndexRouteImport } from './routes/asset-inventory/assets/print/index'
 
@@ -111,6 +112,12 @@ const PurchaseRequestUsersUserIdRoute =
     path: '/users/$userId',
     getParentRoute: () => PurchaseRequestRouteRoute,
   } as any)
+const PurchaseRequestSettingsThemeRoute =
+  PurchaseRequestSettingsThemeRouteImport.update({
+    id: '/settings/theme',
+    path: '/settings/theme',
+    getParentRoute: () => PurchaseRequestRouteRoute,
+  } as any)
 const AssetInventoryAssetsIdRoute = AssetInventoryAssetsIdRouteImport.update({
   id: '/assets/$id',
   path: '/assets/$id',
@@ -131,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginIndexRoute
   '/purchase-request/': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
+  '/purchase-request/settings/theme': typeof PurchaseRequestSettingsThemeRoute
   '/purchase-request/users/$userId': typeof PurchaseRequestUsersUserIdRoute
   '/asset-inventory/asset-logs': typeof AssetInventoryAssetLogsIndexRoute
   '/asset-inventory/assets': typeof AssetInventoryAssetsIndexRoute
@@ -148,6 +156,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginIndexRoute
   '/purchase-request': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
+  '/purchase-request/settings/theme': typeof PurchaseRequestSettingsThemeRoute
   '/purchase-request/users/$userId': typeof PurchaseRequestUsersUserIdRoute
   '/asset-inventory/asset-logs': typeof AssetInventoryAssetLogsIndexRoute
   '/asset-inventory/assets': typeof AssetInventoryAssetsIndexRoute
@@ -168,6 +177,7 @@ export interface FileRoutesById {
   '/login/': typeof LoginIndexRoute
   '/purchase-request/': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
+  '/purchase-request/settings/theme': typeof PurchaseRequestSettingsThemeRoute
   '/purchase-request/users/$userId': typeof PurchaseRequestUsersUserIdRoute
   '/asset-inventory/asset-logs/': typeof AssetInventoryAssetLogsIndexRoute
   '/asset-inventory/assets/': typeof AssetInventoryAssetsIndexRoute
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/purchase-request/'
     | '/asset-inventory/assets/$id'
+    | '/purchase-request/settings/theme'
     | '/purchase-request/users/$userId'
     | '/asset-inventory/asset-logs'
     | '/asset-inventory/assets'
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/purchase-request'
     | '/asset-inventory/assets/$id'
+    | '/purchase-request/settings/theme'
     | '/purchase-request/users/$userId'
     | '/asset-inventory/asset-logs'
     | '/asset-inventory/assets'
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
     | '/login/'
     | '/purchase-request/'
     | '/asset-inventory/assets/$id'
+    | '/purchase-request/settings/theme'
     | '/purchase-request/users/$userId'
     | '/asset-inventory/asset-logs/'
     | '/asset-inventory/assets/'
@@ -351,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PurchaseRequestUsersUserIdRouteImport
       parentRoute: typeof PurchaseRequestRouteRoute
     }
+    '/purchase-request/settings/theme': {
+      id: '/purchase-request/settings/theme'
+      path: '/settings/theme'
+      fullPath: '/purchase-request/settings/theme'
+      preLoaderRoute: typeof PurchaseRequestSettingsThemeRouteImport
+      parentRoute: typeof PurchaseRequestRouteRoute
+    }
     '/asset-inventory/assets/$id': {
       id: '/asset-inventory/assets/$id'
       path: '/assets/$id'
@@ -395,6 +415,7 @@ const AssetInventoryRouteRouteWithChildren =
 
 interface PurchaseRequestRouteRouteChildren {
   PurchaseRequestIndexRoute: typeof PurchaseRequestIndexRoute
+  PurchaseRequestSettingsThemeRoute: typeof PurchaseRequestSettingsThemeRoute
   PurchaseRequestUsersUserIdRoute: typeof PurchaseRequestUsersUserIdRoute
   PurchaseRequestDashboardIndexRoute: typeof PurchaseRequestDashboardIndexRoute
   PurchaseRequestRequestsIndexRoute: typeof PurchaseRequestRequestsIndexRoute
@@ -403,6 +424,7 @@ interface PurchaseRequestRouteRouteChildren {
 
 const PurchaseRequestRouteRouteChildren: PurchaseRequestRouteRouteChildren = {
   PurchaseRequestIndexRoute: PurchaseRequestIndexRoute,
+  PurchaseRequestSettingsThemeRoute: PurchaseRequestSettingsThemeRoute,
   PurchaseRequestUsersUserIdRoute: PurchaseRequestUsersUserIdRoute,
   PurchaseRequestDashboardIndexRoute: PurchaseRequestDashboardIndexRoute,
   PurchaseRequestRequestsIndexRoute: PurchaseRequestRequestsIndexRoute,

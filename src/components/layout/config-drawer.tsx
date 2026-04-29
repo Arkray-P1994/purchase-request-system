@@ -19,7 +19,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { type Collapsible, useLayout } from "@/context/layout-provider";
-import { useTheme } from "@/context/theme-provider";
+import { useTheme } from "@/components/theme";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "../ui/sidebar";
 

@@ -2,6 +2,7 @@ import {
   GitPullRequest,
   History,
   LayoutDashboard,
+  Palette,
   ScrollText,
   UserCog,
 } from "lucide-react";
@@ -42,6 +43,16 @@ export const sidebarData: SidebarData = {
           title: "Users",
           url: "/purchase-request/users",
           icon: UserCog,
+        },
+      ],
+    },
+    {
+      title: "Settings",
+      items: [
+        {
+          title: "Theme",
+          url: "/purchase-request/settings/theme",
+          icon: Palette,
         },
       ],
     },

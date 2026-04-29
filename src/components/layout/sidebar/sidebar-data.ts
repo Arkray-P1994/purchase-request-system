@@ -4,6 +4,7 @@ import {
   LayoutDashboard,
   Palette,
   ScrollText,
+  ShieldCheck,
   UserCog,
 } from "lucide-react";
 import type { SidebarData } from "./types";
@@ -43,6 +44,11 @@ export const sidebarData: SidebarData = {
           title: "Users",
           url: "/purchase-request/users",
           icon: UserCog,
+        },
+        {
+          title: "Team Approvers",
+          url: "/purchase-request/team-approvers",
+          icon: ShieldCheck,
         },
       ],
     },

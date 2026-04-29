@@ -38,7 +38,7 @@ interface FieldProps<T extends FieldValues> {
   placeholder?: string;
   description?: string;
   type?: "text" | "number" | "email" | "password";
-  variant?: "input" | "textarea" | "select" | "select_by_name" | "select_by_id" | "combobox" | "multi-select";
+  variant?: "input" | "textarea" | "select" | "select_by_name" | "select_by_id" | "combobox" | "combobox_by_id" | "multi-select";
   rows?: number;
   options?: SelectOption[];
   selectOptions?: SelectOptionByName[] | SelectOption[];
@@ -150,6 +150,15 @@ export function Field<T extends FieldValues>({
                 placeholder={placeholder}
                 label={label}
                 selectOptions={selectOptions}
+                className={className}
+                onSelect={onSelect}
+              />
+            ) : variant === "combobox_by_id" ? (
+              <ComboboxByIdField
+                field={field}
+                placeholder={placeholder}
+                label={label}
+                selectOptions={selectOptions as SelectOption[]}
                 className={className}
                 onSelect={onSelect}
               />
@@ -355,6 +364,76 @@ function MultiSelectField({
                     className={cn(
                       "mr-2 h-4 w-4",
                       selected.includes(option.id) ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+function ComboboxByIdField({
+  field,
+  placeholder,
+  label,
+  selectOptions,
+  className,
+  onSelect,
+}: {
+  field: any;
+  placeholder?: string;
+  label: string;
+  selectOptions: SelectOption[];
+  className?: string;
+  onSelect?: (value: any) => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            "w-full justify-between font-normal border-muted-foreground h-auto py-2 px-3 text-left",
+            !field.value && "text-muted-foreground",
+            className
+          )}
+        >
+          <span className="flex-1 whitespace-normal break-words">
+            {field.value
+              ? selectOptions.find((option) => String(option.id) === String(field.value))?.name || field.value
+              : placeholder}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+        <Command>
+          <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
+          <CommandList>
+            <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
+            <CommandGroup>
+              {selectOptions.map((option) => (
+                <CommandItem
+                  key={option.id}
+                  value={option.name}
+                  onSelect={() => {
+                    onSelect?.(option);
+                    field.onChange(String(option.id));
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      String(option.id) === String(field.value) ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {option.name}

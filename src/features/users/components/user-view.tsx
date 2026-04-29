@@ -34,7 +34,7 @@ export function UserView({ userId }: { userId: string }) {
     filterKey: "uFilter",
   });
 
-  const { data: requestsData, isLoading: requestsLoading } = useRequests({
+  const { data: requestsData } = useRequests({
     page: String(page),
     limit: String(limit),
     sort: String(sort),

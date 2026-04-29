@@ -4,6 +4,23 @@ import { Cross2Icon } from "@radix-ui/react-icons";
 import { type Table } from "@tanstack/react-table";
 import { debounce, useQueryState } from "nuqs";
 import { DataTableViewOptions } from "../../../components/data-table/view-options";
+import { DataTableFacetedFilter } from "../../../components/data-table/faceted-filter";
+import { useTeams } from "@/api/fetch-teams";
+import { 
+  CheckCircle2, 
+  Clock, 
+  AlertCircle, 
+  Send,
+  Users
+} from "lucide-react";
+
+const STATUS_OPTIONS = [
+  { label: "Pending", value: "1", icon: Clock },
+  { label: "Approved", value: "2", icon: CheckCircle2 },
+  { label: "Disapproved", value: "3", icon: AlertCircle },
+  { label: "Released", value: "4", icon: Send },
+  { label: "Under Approval", value: "5", icon: Clock },
+];
 
 type DataTableToolbarProps<TData> = {
   table: Table<TData>;
@@ -15,38 +32,44 @@ export function DataTableToolbar<TData>({
   table,
   searchPlaceholder = "Filter...",
 }: DataTableToolbarProps<TData>) {
-
-  // 1. Explicitly track pageSize.
-  // We don't use the setter, but this "registers" the param with nuqs in this component.
-  // const [pageSize] = useQueryState("pageSize", parseAsString.withDefault("10"));
-
-  // 2. Global filter state
+  const { teams } = useTeams();
+  
   const [filter, setfilter] = useQueryState("filter", {
     defaultValue: "",
-    shallow: true, // Keep it shallow to avoid full page reloads
+    shallow: true,
     clearOnDefault: true,
     limitUrlUpdates: debounce(500),
   });
 
-  // 3. Page state
+  const [statusId, setStatusId] = useQueryState("status_id", {
+    defaultValue: "",
+    shallow: true,
+    clearOnDefault: true,
+  });
+
+  const [teamId, setTeamId] = useQueryState("team_id", {
+    defaultValue: "",
+    shallow: true,
+    clearOnDefault: true,
+  });
+
   const [page, setPage] = useQueryState("page", {
     defaultValue: "1",
     shallow: true,
   });
 
   const handleSearchChange = async (value: string | null) => {
-    // We update the filter.
-    // nuqs naturally preserves other existing params in the URL (like pageSize)
-    // unless they are explicitly set to null.
     await setfilter(value || null);
-
-    // Reset to page 1 when searching
-    if (page !== "1") {
-      await setPage(null);
-    }
+    if (page !== "1") await setPage(null);
   };
 
-  const isFiltered = filter !== "" || table.getState().columnFilters.length > 0;
+  const isFiltered = filter !== "" || statusId !== "" || teamId !== "" || table.getState().columnFilters.length > 0;
+
+  const teamOptions = teams.map((team: any) => ({
+    label: team.name,
+    value: String(team.id),
+    icon: Users,
+  }));
 
   return (
     <div className="flex items-center justify-between">
@@ -58,13 +81,43 @@ export function DataTableToolbar<TData>({
           className="h-8 w-[150px] lg:w-[250px]"
         />
 
+        <div className="flex items-center gap-2">
+          <DataTableFacetedFilter
+            title="Status"
+            options={STATUS_OPTIONS}
+            // Overriding internal column logic since we use nuqs
+            column={{
+              getFilterValue: () => (statusId ? statusId.split(",") : []),
+              setFilterValue: (val: any) => {
+                setStatusId(val ? val.join(",") : null);
+                setPage(null);
+              },
+              getFacetedUniqueValues: () => new Map(),
+            } as any}
+          />
+
+          <DataTableFacetedFilter
+            title="Team"
+            options={teamOptions}
+            column={{
+              getFilterValue: () => (teamId ? teamId.split(",") : []),
+              setFilterValue: (val: any) => {
+                setTeamId(val ? val.join(",") : null);
+                setPage(null);
+              },
+              getFacetedUniqueValues: () => new Map(),
+            } as any}
+          />
+        </div>
+
         {isFiltered && (
           <Button
             variant="ghost"
             onClick={() => {
               table.resetColumnFilters();
-              table.setGlobalFilter("");
               setfilter(null);
+              setStatusId(null);
+              setTeamId(null);
               setPage(null);
             }}
             className="h-8 px-2 lg:px-3"
@@ -80,3 +133,4 @@ export function DataTableToolbar<TData>({
     </div>
   );
 }
+

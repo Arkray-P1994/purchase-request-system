@@ -9,6 +9,7 @@ import { baseUrl } from "@/lib/base-url";
 async function request(url: string, payload?: object) {
   const res = await fetch(url, {
     method: "POST",
+    credentials: "include",
     body: JSON.stringify(payload),
     headers: {
       accept: "application/json",

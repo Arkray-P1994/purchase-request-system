@@ -22,11 +22,8 @@ import { Route as AssetInventoryDashboardIndexRouteImport } from './routes/asset
 import { Route as AssetInventoryCategoriesIndexRouteImport } from './routes/asset-inventory/categories/index'
 import { Route as AssetInventoryAssetsIndexRouteImport } from './routes/asset-inventory/assets/index'
 import { Route as AssetInventoryAssetLogsIndexRouteImport } from './routes/asset-inventory/asset-logs/index'
-import { Route as PurchaseRequestRequestsCreateRouteImport } from './routes/purchase-request/requests/create'
 import { Route as AssetInventoryAssetsIdRouteImport } from './routes/asset-inventory/assets/$id'
-import { Route as PurchaseRequestRequestsRequestIdIndexRouteImport } from './routes/purchase-request/requests/$requestId.index'
 import { Route as AssetInventoryAssetsPrintIndexRouteImport } from './routes/asset-inventory/assets/print/index'
-import { Route as PurchaseRequestRequestsRequestIdEditRouteImport } from './routes/purchase-request/requests/$requestId.edit'
 
 const PurchaseRequestRouteRoute = PurchaseRequestRouteRouteImport.update({
   id: '/purchase-request',
@@ -100,34 +97,16 @@ const AssetInventoryAssetLogsIndexRoute =
     path: '/asset-logs/',
     getParentRoute: () => AssetInventoryRouteRoute,
   } as any)
-const PurchaseRequestRequestsCreateRoute =
-  PurchaseRequestRequestsCreateRouteImport.update({
-    id: '/requests/create',
-    path: '/requests/create',
-    getParentRoute: () => PurchaseRequestRouteRoute,
-  } as any)
 const AssetInventoryAssetsIdRoute = AssetInventoryAssetsIdRouteImport.update({
   id: '/assets/$id',
   path: '/assets/$id',
   getParentRoute: () => AssetInventoryRouteRoute,
 } as any)
-const PurchaseRequestRequestsRequestIdIndexRoute =
-  PurchaseRequestRequestsRequestIdIndexRouteImport.update({
-    id: '/requests/$requestId/',
-    path: '/requests/$requestId/',
-    getParentRoute: () => PurchaseRequestRouteRoute,
-  } as any)
 const AssetInventoryAssetsPrintIndexRoute =
   AssetInventoryAssetsPrintIndexRouteImport.update({
     id: '/assets/print/',
     path: '/assets/print/',
     getParentRoute: () => AssetInventoryRouteRoute,
-  } as any)
-const PurchaseRequestRequestsRequestIdEditRoute =
-  PurchaseRequestRequestsRequestIdEditRouteImport.update({
-    id: '/requests/$requestId/edit',
-    path: '/requests/$requestId/edit',
-    getParentRoute: () => PurchaseRequestRouteRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -138,7 +117,6 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginIndexRoute
   '/purchase-request/': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
-  '/purchase-request/requests/create': typeof PurchaseRequestRequestsCreateRoute
   '/asset-inventory/asset-logs': typeof AssetInventoryAssetLogsIndexRoute
   '/asset-inventory/assets': typeof AssetInventoryAssetsIndexRoute
   '/asset-inventory/categories': typeof AssetInventoryCategoriesIndexRoute
@@ -146,9 +124,7 @@ export interface FileRoutesByFullPath {
   '/asset-inventory/users': typeof AssetInventoryUsersIndexRoute
   '/purchase-request/dashboard': typeof PurchaseRequestDashboardIndexRoute
   '/purchase-request/requests': typeof PurchaseRequestRequestsIndexRoute
-  '/purchase-request/requests/$requestId/edit': typeof PurchaseRequestRequestsRequestIdEditRoute
   '/asset-inventory/assets/print': typeof AssetInventoryAssetsPrintIndexRoute
-  '/purchase-request/requests/$requestId': typeof PurchaseRequestRequestsRequestIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -156,7 +132,6 @@ export interface FileRoutesByTo {
   '/login': typeof LoginIndexRoute
   '/purchase-request': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
-  '/purchase-request/requests/create': typeof PurchaseRequestRequestsCreateRoute
   '/asset-inventory/asset-logs': typeof AssetInventoryAssetLogsIndexRoute
   '/asset-inventory/assets': typeof AssetInventoryAssetsIndexRoute
   '/asset-inventory/categories': typeof AssetInventoryCategoriesIndexRoute
@@ -164,9 +139,7 @@ export interface FileRoutesByTo {
   '/asset-inventory/users': typeof AssetInventoryUsersIndexRoute
   '/purchase-request/dashboard': typeof PurchaseRequestDashboardIndexRoute
   '/purchase-request/requests': typeof PurchaseRequestRequestsIndexRoute
-  '/purchase-request/requests/$requestId/edit': typeof PurchaseRequestRequestsRequestIdEditRoute
   '/asset-inventory/assets/print': typeof AssetInventoryAssetsPrintIndexRoute
-  '/purchase-request/requests/$requestId': typeof PurchaseRequestRequestsRequestIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -177,7 +150,6 @@ export interface FileRoutesById {
   '/login/': typeof LoginIndexRoute
   '/purchase-request/': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
-  '/purchase-request/requests/create': typeof PurchaseRequestRequestsCreateRoute
   '/asset-inventory/asset-logs/': typeof AssetInventoryAssetLogsIndexRoute
   '/asset-inventory/assets/': typeof AssetInventoryAssetsIndexRoute
   '/asset-inventory/categories/': typeof AssetInventoryCategoriesIndexRoute
@@ -185,9 +157,7 @@ export interface FileRoutesById {
   '/asset-inventory/users/': typeof AssetInventoryUsersIndexRoute
   '/purchase-request/dashboard/': typeof PurchaseRequestDashboardIndexRoute
   '/purchase-request/requests/': typeof PurchaseRequestRequestsIndexRoute
-  '/purchase-request/requests/$requestId/edit': typeof PurchaseRequestRequestsRequestIdEditRoute
   '/asset-inventory/assets/print/': typeof AssetInventoryAssetsPrintIndexRoute
-  '/purchase-request/requests/$requestId/': typeof PurchaseRequestRequestsRequestIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -199,7 +169,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/purchase-request/'
     | '/asset-inventory/assets/$id'
-    | '/purchase-request/requests/create'
     | '/asset-inventory/asset-logs'
     | '/asset-inventory/assets'
     | '/asset-inventory/categories'
@@ -207,9 +176,7 @@ export interface FileRouteTypes {
     | '/asset-inventory/users'
     | '/purchase-request/dashboard'
     | '/purchase-request/requests'
-    | '/purchase-request/requests/$requestId/edit'
     | '/asset-inventory/assets/print'
-    | '/purchase-request/requests/$requestId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -217,7 +184,6 @@ export interface FileRouteTypes {
     | '/login'
     | '/purchase-request'
     | '/asset-inventory/assets/$id'
-    | '/purchase-request/requests/create'
     | '/asset-inventory/asset-logs'
     | '/asset-inventory/assets'
     | '/asset-inventory/categories'
@@ -225,9 +191,7 @@ export interface FileRouteTypes {
     | '/asset-inventory/users'
     | '/purchase-request/dashboard'
     | '/purchase-request/requests'
-    | '/purchase-request/requests/$requestId/edit'
     | '/asset-inventory/assets/print'
-    | '/purchase-request/requests/$requestId'
   id:
     | '__root__'
     | '/'
@@ -237,7 +201,6 @@ export interface FileRouteTypes {
     | '/login/'
     | '/purchase-request/'
     | '/asset-inventory/assets/$id'
-    | '/purchase-request/requests/create'
     | '/asset-inventory/asset-logs/'
     | '/asset-inventory/assets/'
     | '/asset-inventory/categories/'
@@ -245,9 +208,7 @@ export interface FileRouteTypes {
     | '/asset-inventory/users/'
     | '/purchase-request/dashboard/'
     | '/purchase-request/requests/'
-    | '/purchase-request/requests/$requestId/edit'
     | '/asset-inventory/assets/print/'
-    | '/purchase-request/requests/$requestId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -350,13 +311,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssetInventoryAssetLogsIndexRouteImport
       parentRoute: typeof AssetInventoryRouteRoute
     }
-    '/purchase-request/requests/create': {
-      id: '/purchase-request/requests/create'
-      path: '/requests/create'
-      fullPath: '/purchase-request/requests/create'
-      preLoaderRoute: typeof PurchaseRequestRequestsCreateRouteImport
-      parentRoute: typeof PurchaseRequestRouteRoute
-    }
     '/asset-inventory/assets/$id': {
       id: '/asset-inventory/assets/$id'
       path: '/assets/$id'
@@ -364,26 +318,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssetInventoryAssetsIdRouteImport
       parentRoute: typeof AssetInventoryRouteRoute
     }
-    '/purchase-request/requests/$requestId/': {
-      id: '/purchase-request/requests/$requestId/'
-      path: '/requests/$requestId'
-      fullPath: '/purchase-request/requests/$requestId'
-      preLoaderRoute: typeof PurchaseRequestRequestsRequestIdIndexRouteImport
-      parentRoute: typeof PurchaseRequestRouteRoute
-    }
     '/asset-inventory/assets/print/': {
       id: '/asset-inventory/assets/print/'
       path: '/assets/print'
       fullPath: '/asset-inventory/assets/print'
       preLoaderRoute: typeof AssetInventoryAssetsPrintIndexRouteImport
       parentRoute: typeof AssetInventoryRouteRoute
-    }
-    '/purchase-request/requests/$requestId/edit': {
-      id: '/purchase-request/requests/$requestId/edit'
-      path: '/requests/$requestId/edit'
-      fullPath: '/purchase-request/requests/$requestId/edit'
-      preLoaderRoute: typeof PurchaseRequestRequestsRequestIdEditRouteImport
-      parentRoute: typeof PurchaseRequestRouteRoute
     }
   }
 }
@@ -415,22 +355,14 @@ const AssetInventoryRouteRouteWithChildren =
 
 interface PurchaseRequestRouteRouteChildren {
   PurchaseRequestIndexRoute: typeof PurchaseRequestIndexRoute
-  PurchaseRequestRequestsCreateRoute: typeof PurchaseRequestRequestsCreateRoute
   PurchaseRequestDashboardIndexRoute: typeof PurchaseRequestDashboardIndexRoute
   PurchaseRequestRequestsIndexRoute: typeof PurchaseRequestRequestsIndexRoute
-  PurchaseRequestRequestsRequestIdEditRoute: typeof PurchaseRequestRequestsRequestIdEditRoute
-  PurchaseRequestRequestsRequestIdIndexRoute: typeof PurchaseRequestRequestsRequestIdIndexRoute
 }
 
 const PurchaseRequestRouteRouteChildren: PurchaseRequestRouteRouteChildren = {
   PurchaseRequestIndexRoute: PurchaseRequestIndexRoute,
-  PurchaseRequestRequestsCreateRoute: PurchaseRequestRequestsCreateRoute,
   PurchaseRequestDashboardIndexRoute: PurchaseRequestDashboardIndexRoute,
   PurchaseRequestRequestsIndexRoute: PurchaseRequestRequestsIndexRoute,
-  PurchaseRequestRequestsRequestIdEditRoute:
-    PurchaseRequestRequestsRequestIdEditRoute,
-  PurchaseRequestRequestsRequestIdIndexRoute:
-    PurchaseRequestRequestsRequestIdIndexRoute,
 }
 
 const PurchaseRequestRouteRouteWithChildren =

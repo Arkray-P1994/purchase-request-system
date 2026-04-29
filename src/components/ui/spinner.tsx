@@ -1,9 +1,7 @@
-import { Loader } from "lucide-react";
-
 const Spinner = () => {
   return (
     <div className="min-h-screen min-w-screen flex justify-center items-center">
-      <Loader className="animate-spin" />
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
     </div>
   );
 };

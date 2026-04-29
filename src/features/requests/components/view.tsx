@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useRequest } from "@/api/fetch-request";
 import { ConfigDrawer } from "@/components/layout/config-drawer";
 import { Header } from "@/components/layout/header";
@@ -30,21 +31,34 @@ import {
   AlertCircle,
 } from "lucide-react";
 import moment from "moment";
-import { useParams, Link } from "@tanstack/react-router";
+import { useSearch, Link, useNavigate } from "@tanstack/react-router";
 import { ApprovalActions } from "./approval-actions";
+import { StatusBadge } from "./status-badge";
+import Spinner from "@/components/ui/spinner";
+import { useDeleteRequest } from "../actions/delete-request";
+import { useUser } from "@/api/fetch-user";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Trash2, AlertTriangle } from "lucide-react";
 
 export function ViewRequest() {
-  const { requestId } = useParams({
-    from: "/purchase-request/requests/$requestId/",
-  });
+  const navigate = useNavigate();
+  const { requestId } = useSearch({
+    from: "/purchase-request/requests/",
+  }) as any;
+  const { user } = useUser();
+  const [openDelete, setOpenDelete] = useState(false);
   const { data: request, isLoading } = useRequest({ id: requestId });
+  const { trigger: deleteReq, isMutating: isDeleting } = useDeleteRequest(String(requestId));
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <Spinner />;
   }
 
   if (!request) {
@@ -64,22 +78,6 @@ export function ViewRequest() {
       0,
     ) || 0;
 
-  const StatusBadge = ({ status }: { status: string }) => {
-    const variants: Record<string, string> = {
-      Approved: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-      Pending: "bg-orange-500/10 text-orange-500 border-orange-500/20",
-      Rejected: "bg-destructive/10 text-destructive border-destructive/20",
-      Disapproved: "bg-destructive/10 text-destructive border-destructive/20",
-    };
-    return (
-      <Badge
-        className={`px-2 py-0.5 font-bold uppercase tracking-wider text-[10px] border ${variants[status] || "bg-muted text-muted-foreground"}`}
-      >
-        {status}
-      </Badge>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-background/50">
       <Header fixed>
@@ -94,7 +92,7 @@ export function ViewRequest() {
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
-              onClick={() => window.history.back()}
+              onClick={() => navigate({ to: "/purchase-request/requests" })}
               className="group"
             >
               <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
@@ -102,16 +100,62 @@ export function ViewRequest() {
             </Button>
             <div className="flex items-center gap-2">
               {request && <ApprovalActions request={request} />}
-              {request.status_id?.name === "Pending" && (
-                <Link
-                  to="/purchase-request/requests/$requestId/edit"
-                  params={{ requestId: String(requestId) }}
-                >
-                  <Button variant="outline" size="sm">
-                    <FileText className="mr-2 h-4 w-4" />
-                    Edit Request
+              {["Pending", "Draft"].includes(request.status_id?.name || "") && (
+                <>
+                  <Link
+                    to="/purchase-request/requests"
+                    search={{ requestId: String(requestId), action: "edit" }}
+                  >
+                    <Button variant="outline" size="sm">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Edit Request
+                    </Button>
+                  </Link>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => setOpenDelete(true)}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete Request
                   </Button>
-                </Link>
+
+                  <Dialog open={openDelete} onOpenChange={setOpenDelete}>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <div className="bg-destructive/10 w-fit p-2 rounded-full mb-2">
+                          <AlertTriangle className="h-6 w-6 text-destructive" />
+                        </div>
+                        <DialogTitle>Confirm Deletion</DialogTitle>
+                        <DialogDescription className="text-sm">
+                          Are you sure you want to delete request <span className="font-bold text-foreground">#{request.ticket_id}</span>? 
+                          This action is permanent and will soft-delete all associated items and attachments.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                          variant="outline"
+                          onClick={() => setOpenDelete(false)}
+                          disabled={isDeleting}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={async () => {
+                            await deleteReq({ causer_id: user?.user?.id });
+                            setOpenDelete(false);
+                            navigate({ to: "/purchase-request/requests" });
+                          }}
+                          disabled={isDeleting}
+                        >
+                          {isDeleting ? "Deleting..." : "Delete Permanently"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </>
               )}
             </div>
           </div>
@@ -257,9 +301,6 @@ export function ViewRequest() {
                           Budget Code
                         </TableHead>
                         <TableHead className="font-bold text-[10px] uppercase min-w-[120px] border-r">
-                          Item Name
-                        </TableHead>
-                        <TableHead className="font-bold text-[10px] uppercase min-w-[120px] border-r">
                           Purpose
                         </TableHead>
                         <TableHead className="w-[60px] text-center font-bold text-[10px] uppercase border-r">
@@ -295,11 +336,7 @@ export function ViewRequest() {
                               {item.budget_code || "N/A"}
                             </code>
                           </TableCell>
-                          <TableCell className="border-r">
-                            <p className="text-xs text-muted-foreground font-medium">
-                              {item.item_name}
-                            </p>
-                          </TableCell>
+
                           <TableCell className="border-r">
                             <span
                               className="text-xs font-medium text-muted-foreground line-clamp-2"
@@ -395,11 +432,41 @@ export function ViewRequest() {
                     </div>
                     <CheckCircle2 className="h-8 w-8 opacity-20" />
                   </div>
+                  {request.status_id?.name === "Released" && request.released_at && (
+                    <>
+                      <div className="h-px bg-primary-foreground/20" />
+                      <div className="space-y-4 pt-2">
+                        <div className="space-y-1.5">
+                          <p className="text-[10px] font-bold uppercase opacity-60">
+                            Released At
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="h-4 w-4 opacity-80" />
+                            <span className="text-sm font-bold tracking-tight">
+                              {moment(request.released_at).format("MMMM DD, YYYY · h:mm A")}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-1.5">
+                          <p className="text-[10px] font-bold uppercase opacity-60">
+                            Released By
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 opacity-80" />
+                            <span className="text-sm font-bold tracking-tight">
+                              {request.releasor?.name || "N/A"}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
               {/* Approval Workflow */}
-              <Card className="border border-border/50 shadow-none bg-card flex flex-col">
+              {request.status_id?.name !== "Draft" && (
+                <Card className="border border-border/50 shadow-none bg-card flex flex-col">
                 <CardHeader className="pb-5">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
@@ -614,8 +681,9 @@ export function ViewRequest() {
                     )}
                 </CardContent>
               </Card>
+            )}
 
-              <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+            <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
                 <CardHeader className="pb-3 border-b border-muted/20">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">

@@ -32,29 +32,12 @@ import {
   type NavLink,
   type NavGroup as NavGroupProps,
 } from "./types";
-import { useUser } from "@/api/fetch-user";
-import { useTeamStore } from "@/store/use-team-store";
 
 export function NavGroup({ title, items }: NavGroupProps) {
   const { state, isMobile } = useSidebar();
-  const { user } = useUser();
   const { pathname } = useLocation();
-  const selectedTeamId = useTeamStore((state) => state.selectedTeamId);
 
-  const processedItems = items.map((item) => {
-    if (item.title.toLowerCase() === "requests" && user?.user?.teams) {
-      return {
-        ...item,
-        items: user.user.teams.map((team: any) => ({
-          title: team.name,
-          url: item.url,
-          id: team.id,
-          icon: item.icon,
-        })),
-      };
-    }
-    return item;
-  });
+  const processedItems = items;
 
   return (
     <SidebarGroup>
@@ -69,7 +52,6 @@ export function NavGroup({ title, items }: NavGroupProps) {
                 key={key}
                 item={item as NavLink}
                 href={pathname}
-                selectedTeamId={selectedTeamId}
               />
             );
 
@@ -79,7 +61,6 @@ export function NavGroup({ title, items }: NavGroupProps) {
                 key={key}
                 item={item as NavCollapsible}
                 href={pathname}
-                selectedTeamId={selectedTeamId}
               />
             );
 
@@ -88,7 +69,6 @@ export function NavGroup({ title, items }: NavGroupProps) {
               key={key}
               item={item as NavCollapsible}
               href={pathname}
-              selectedTeamId={selectedTeamId}
             />
           );
         })}
@@ -104,16 +84,13 @@ function NavBadge({ children }: { children: ReactNode }) {
 function SidebarMenuLink({
   item,
   href,
-  selectedTeamId,
 }: {
   item: NavLink & { id?: string };
   href: string;
-  selectedTeamId: string | null;
 }) {
   const { setOpenMobile } = useSidebar();
-  const setSelectedTeamId = useTeamStore((state) => state.setSelectedTeamId);
-  const isActive = checkIsActive(href, item, false, selectedTeamId);
-  const isSemiActive = checkIsSemiActive(href, item, selectedTeamId);
+  const isActive = checkIsActive(href, item, false);
+  const isSemiActive = checkIsSemiActive(href, item);
 
   return (
     <SidebarMenuItem>
@@ -135,7 +112,6 @@ function SidebarMenuLink({
           search={item.search ? (prev: any) => ({ ...prev, ...item.search }) : undefined}
           onClick={() => {
             setOpenMobile(false);
-            if (item.id) setSelectedTeamId(item.id);
           }}
         >
           {item.icon && <item.icon />}
@@ -150,16 +126,13 @@ function SidebarMenuLink({
 function SidebarMenuCollapsible({
   item,
   href,
-  selectedTeamId,
 }: {
   item: NavCollapsible;
   href: string;
-  selectedTeamId: string | null;
 }) {
   const { setOpenMobile } = useSidebar();
-  const setSelectedTeamId = useTeamStore((state) => state.setSelectedTeamId);
-  const isActive = checkIsActive(href, item, true, selectedTeamId);
-  const isSemiActive = checkIsSemiActive(href, item, selectedTeamId);
+  const isActive = checkIsActive(href, item, true);
+  const isSemiActive = checkIsSemiActive(href, item);
 
   return (
     <Collapsible
@@ -193,7 +166,6 @@ function SidebarMenuCollapsible({
                 href,
                 subItem,
                 false,
-                selectedTeamId,
               );
 
               return (
@@ -209,7 +181,6 @@ function SidebarMenuCollapsible({
                       to={subItem.url}
                       onClick={() => {
                         setOpenMobile(false);
-                        if (subItem.id) setSelectedTeamId(subItem.id);
                       }}
                     >
                       {subItem.icon && <subItem.icon />}
@@ -230,15 +201,12 @@ function SidebarMenuCollapsible({
 function SidebarMenuCollapsedDropdown({
   item,
   href,
-  selectedTeamId,
 }: {
   item: NavCollapsible;
   href: string;
-  selectedTeamId: string | null;
 }) {
-  const setSelectedTeamId = useTeamStore((state) => state.setSelectedTeamId);
-  const isActive = checkIsActive(href, item, true, selectedTeamId);
-  const isSemiActive = checkIsSemiActive(href, item, selectedTeamId);
+  const isActive = checkIsActive(href, item, true);
+  const isSemiActive = checkIsSemiActive(href, item);
 
   return (
     <SidebarMenuItem>
@@ -267,7 +235,7 @@ function SidebarMenuCollapsedDropdown({
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           {item.items.map((sub: any) => {
-            const isSubActive = checkIsActive(href, sub, false, selectedTeamId);
+            const isSubActive = checkIsActive(href, sub, false);
 
             return (
               <DropdownMenuItem
@@ -277,7 +245,6 @@ function SidebarMenuCollapsedDropdown({
                 <Link
                   to={sub.url}
                   onClick={() => {
-                    if (sub.id) setSelectedTeamId(sub.id);
                   }}
                   className={`${isSubActive ? "bg-accent text-accent-foreground" : ""}`}
                 >
@@ -300,7 +267,6 @@ function checkIsActive(
   href: string,
   item: NavItem & { id?: string },
   mainNav = false,
-  selectedTeamId: string | null,
 ) {
   const normalize = (u?: string) =>
     (u ?? "").split("?")[0].split("#")[0].replace(/\/+$/, "");
@@ -309,16 +275,9 @@ function checkIsActive(
 
   const isPathMatch = hrefBase === itemBase;
 
-  if (item.id !== undefined && item.id !== null) {
-    return isPathMatch && String(item.id) === String(selectedTeamId);
-  }
-
   if (item.items && item.items.length > 0) {
     return item.items.some((sub: any) => {
       const subPathMatch = normalize(sub.url) === hrefBase;
-      if (sub.id !== undefined && sub.id !== null) {
-        return subPathMatch && String(sub.id) === String(selectedTeamId);
-      }
       return subPathMatch;
     });
   }
@@ -335,43 +294,8 @@ function checkIsActive(
 }
 
 function checkIsSemiActive(
-  href: string,
-  item: NavItem & { id?: string },
-  selectedTeamId: string | null,
+  _href: string,
+  _item: NavItem & { id?: string },
 ) {
-  const normalize = (u?: string) =>
-    (u ?? "").split("?")[0].split("#")[0].replace(/\/+$/, "");
-  const hrefBase = normalize(href);
-  const itemBase = normalize(item?.url);
-
-  const isPathMatch = hrefBase === itemBase;
-
-  if (isPathMatch) {
-    if (
-      item.id !== undefined &&
-      item.id !== null &&
-      String(selectedTeamId) !== String(item.id)
-    ) {
-      return true;
-    }
-    if (item.items && item.items.length > 0) {
-      return !item.items.some(
-        (sub: any) => String(sub.id) === String(selectedTeamId),
-      );
-    }
-  }
-
-  if (item.items && item.items.length > 0) {
-    return item.items.some((sub: any) => {
-      const subPathMatch = normalize(sub.url) === hrefBase;
-      return (
-        subPathMatch &&
-        sub.id !== undefined &&
-        sub.id !== null &&
-        String(selectedTeamId) !== String(sub.id)
-      );
-    });
-  }
-
   return false;
 }

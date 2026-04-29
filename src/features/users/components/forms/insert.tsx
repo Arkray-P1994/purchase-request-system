@@ -25,7 +25,7 @@ export default function CreateUserForm({
   action,
   setOpen,
 }: UserCreateFormProps) {
-  const { data: teams, isLoading: teamsLoading } = useTeams();
+  const { teams, isLoading: teamsLoading } = useTeams();
   const { trigger, isMutating } = useCreateUser();
 
   const form = useForm<userFormValues>({
@@ -95,7 +95,7 @@ export default function CreateUserForm({
               name="team_id"
               label="Team"
               variant="select"
-              options={teams.data}
+              options={teams}
             />
             <FormActions
               action={action}

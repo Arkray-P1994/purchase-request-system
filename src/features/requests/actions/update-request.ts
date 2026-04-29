@@ -12,6 +12,7 @@ async function request(url: string, payload?: FormData | object) {
 
   const res = await fetch(url, {
     method: "POST", // The PHP backend expects POST
+    credentials: "include",
     body: payload
       ? isFormData
         ? (payload as FormData)
@@ -48,7 +49,8 @@ export function useUpdateRequest(id: string | number) {
       onSuccess: () => {
         mutate((key) => typeof key === "string" && key.includes(`${baseUrl}/request`));
         navigate({
-          to: `/purchase-request/requests/${id}`,
+          to: `/purchase-request/requests`,
+          search: { requestId: String(id) },
         });
         showSuccessToast("Request updated successfully");
       },

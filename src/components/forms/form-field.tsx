@@ -17,6 +17,18 @@ import {
 } from "@/components/ui/select";
 import type { Control, FieldValues, Path } from "react-hook-form";
 import { cn } from "@/lib/utils";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Button } from "@/components/ui/button";
+import { Check, ChevronsUpDown } from "lucide-react";
+import * as React from "react";
 
 interface FieldProps<T extends FieldValues> {
   control: Control<any>;
@@ -25,12 +37,14 @@ interface FieldProps<T extends FieldValues> {
   placeholder?: string;
   description?: string;
   type?: "text" | "number" | "email" | "password";
-  variant?: "input" | "textarea" | "select" | "select_by_name";
+  variant?: "input" | "textarea" | "select" | "select_by_name" | "select_by_id" | "combobox";
   rows?: number;
-  options?: SelectOption[]; // for select dropdown
-  selectOptions?: SelectOptionByName[]; // for select dropdown
+  options?: SelectOption[];
+  selectOptions?: SelectOptionByName[] | SelectOption[];
   hideLabel?: boolean;
   className?: string;
+  onSelect?: (value: any) => void;
+  readOnly?: boolean;
 }
 type SelectOption = {
   id: number;
@@ -54,6 +68,8 @@ export function Field<T extends FieldValues>({
   selectOptions = [],
   hideLabel = false,
   className = "",
+  onSelect,
+  readOnly = false,
 }: FieldProps<T>) {
   return (
     <FormField
@@ -110,6 +126,32 @@ export function Field<T extends FieldValues>({
                   ))}
                 </SelectContent>
               </Select>
+            ) : variant === "select_by_id" ? (
+              <Select value={String(field.value)} onValueChange={(v) => field.onChange(v)}>
+                <SelectTrigger className="w-full border-muted-foreground">
+                  <SelectValue placeholder={placeholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(selectOptions as SelectOption[]).map((option) => (
+                    <SelectItem
+                      key={option.id}
+                      value={String(option.id)}
+                      className="cursor-pointer"
+                    >
+                      {option.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : variant === "combobox" ? (
+              <ComboboxField
+                field={field}
+                placeholder={placeholder}
+                label={label}
+                selectOptions={selectOptions}
+                className={className}
+                onSelect={onSelect}
+              />
             ) : (
               <Input
                 type={type}
@@ -129,6 +171,7 @@ export function Field<T extends FieldValues>({
                     e.target.select();
                   }
                 }}
+                readOnly={readOnly}
                 className={cn("text-xs border-muted-foreground", className)}
               />
             )}
@@ -138,5 +181,76 @@ export function Field<T extends FieldValues>({
         </FormItem>
       )}
     />
+  );
+}
+
+function ComboboxField({
+  field,
+  placeholder,
+  label,
+  selectOptions,
+  className,
+  onSelect,
+}: {
+  field: any;
+  placeholder?: string;
+  label: string;
+  selectOptions: any[];
+  className?: string;
+  onSelect?: (value: any) => void;
+}) {
+  const [open, setOpen] = React.useState(false);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className={cn(
+            "w-full justify-between font-normal border-muted-foreground h-auto py-2 px-3 text-left",
+            !field.value && "text-muted-foreground",
+            className
+          )}
+        >
+          <span className="flex-1 whitespace-normal break-words">
+            {field.value
+              ? selectOptions.find((option) => option.name === field.value)?.name || field.value
+              : placeholder}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+        <Command>
+          <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
+          <CommandList>
+            <CommandEmpty>No {label.toLowerCase()} found.</CommandEmpty>
+            <CommandGroup>
+              {selectOptions.map((option) => (
+                <CommandItem
+                  key={option.name}
+                  value={option.name}
+                  onSelect={() => {
+                    onSelect?.(option);
+                    field.onChange(option.name);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      option.name === field.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

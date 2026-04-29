@@ -2,10 +2,9 @@ import { DataTableColumnHeader } from "@/components/data-table/column-header";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Paperclip } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { StatusBadge } from "./status-badge";
 import { DataTableRowActions } from "./row-actions";
-
 import { Request } from "./schema";
-
 import {
   Tooltip,
   TooltipContent,
@@ -19,7 +18,7 @@ export const Columns: ColumnDef<Request>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="ID" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+    cell: ({ row }) => <div className="w-[80px] text-xs font-medium text-muted-foreground">{row.getValue("id")}</div>,
   },
   {
     accessorKey: "ticket_id",
@@ -28,9 +27,9 @@ export const Columns: ColumnDef<Request>[] = [
     ),
     cell: ({ row }) => (
       <Link
-        to="/purchase-request/requests/$requestId"
-        params={{ requestId: row.original.id.toString() }}
-        className="truncate font-bold text-primary hover:underline underline-offset-4"
+        to="/purchase-request/requests"
+        search={{ requestId: String(row.original.id) }}
+        className="truncate font-bold text-primary hover:underline underline-offset-4 text-xs"
       >
         {row.getValue("ticket_id")}
       </Link>
@@ -41,14 +40,14 @@ export const Columns: ColumnDef<Request>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Requester" />
     ),
-    cell: ({ row }) => <div>{row.original.user_id?.name || "N/A"}</div>,
+    cell: ({ row }) => <div className="text-xs font-semibold">{row.original.user_id?.name || "N/A"}</div>,
   },
   {
     accessorKey: "team_id.name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Team" />
     ),
-    cell: ({ row }) => <div>{row.original.team_id?.name || "N/A"}</div>,
+    cell: ({ row }) => <div className="text-xs">{row.original.team_id?.name || "N/A"}</div>,
   },
 
   {
@@ -57,7 +56,7 @@ export const Columns: ColumnDef<Request>[] = [
       <DataTableColumnHeader column={column} title="Remarks" />
     ),
     cell: ({ row }) => (
-      <div className="max-w-[300px] truncate">{row.getValue("remarks")}</div>
+      <div className="max-w-[300px] truncate text-xs text-muted-foreground">{row.getValue("remarks")}</div>
     ),
   },
   {
@@ -65,7 +64,21 @@ export const Columns: ColumnDef<Request>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Current Approver" />
     ),
-    cell: ({ row }) => <div>{row.original.current_approver?.user?.name || "Pending"}</div>,
+    cell: ({ row }) => {
+      const name = row.original.current_approver?.user?.name;
+      const status = row.original.status_id?.name || "";
+      const isFinalized = ["Approved", "Rejected", "Disapproved", "Released"].includes(status);
+      
+      if (status === "Draft") return <div className="text-xs font-medium text-muted-foreground italic">Draft</div>;
+      if (!name || isFinalized) return <div className="text-xs font-medium text-muted-foreground italic">{status === 'Pending' ? 'Pending' : 'Finalized'}</div>;
+
+      return (
+        <div className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-blue-500 animate-pulse" />
+          {name}
+        </div>
+      );
+    },
   },
 
   {
@@ -73,14 +86,9 @@ export const Columns: ColumnDef<Request>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => {
-      const status = row.original.status_id?.name;
-      return (
-        <div className="font-semibold uppercase text-xs">
-          {status || "Pending"}
-        </div>
-      );
-    },
+    cell: ({ row }) => (
+      <StatusBadge status={row.original.status_id?.name || "Pending"} />
+    ),
   },
 
   {

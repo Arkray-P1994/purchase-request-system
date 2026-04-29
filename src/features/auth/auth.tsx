@@ -1,6 +1,6 @@
 import { useUser } from "@/api/fetch-user";
 import { useRouter } from "@tanstack/react-router";
-import { Loader } from "lucide-react";
+import Spinner from "@/components/ui/spinner";
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 
 /** ---------- Types ---------- */
@@ -154,11 +154,7 @@ export function RequireAuth({
   }, [isLoading, isAuthenticated, user, superAdminOnly, router]);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen w-full flex justify-center items-center">
-        <Loader className="animate-spin" />
-      </div>
-    );
+    return <Spinner />;
   }
 
   // Guard against rendering children if authentication or role check fails

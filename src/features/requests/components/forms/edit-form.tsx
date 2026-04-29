@@ -12,7 +12,6 @@ import { useUpdateRequest } from "../../actions/update-request";
 import { useUser } from "@/api/fetch-user";
 import { DatePicker } from "@/components/date-picker";
 import { 
-  COST_CENTER_OPTIONS, 
   CHARGE_TO_OPTIONS, 
   MANAGEMENT_NUMBER_OPTIONS,
   TRANSACTION_TYPE_OPTIONS,
@@ -20,6 +19,7 @@ import {
   PURCHASE_TYPE_OPTIONS,
   CURRENCY_OPTIONS
 } from "../../data/options";
+import { useBudgetEntries } from "@/api/fetch-budget";
 
 import { Paperclip, X, FileIcon, UploadCloud } from "lucide-react";
 
@@ -29,36 +29,47 @@ interface EditRequestFormProps {
 
 export function EditRequestForm({ initialData }: EditRequestFormProps) {
   const { user } = useUser();
+  const { data: budgetEntries } = useBudgetEntries();
   const { trigger, isMutating } = useUpdateRequest(initialData.id);
+
+  const costCenterOptions = budgetEntries 
+    ? budgetEntries.map((b: any) => ({ 
+        name: `${b.unq_code} - ${b.name}`,
+        fy_start: b.fy_start,
+        fy_end: b.fy_end,
+      }))
+    : [];
 
   const form = useForm<CreateRequestValues>({
     resolver: zodResolver(createRequestSchema) as any,
     defaultValues: {
+      team_id: String(initialData?.team_id?.id || ""),
       desired_delivery_date: initialData?.desired_delivery_date ? new Date(initialData.desired_delivery_date) : new Date(),
       transaction_type: initialData?.transaction_type || "Vendor Payment",
       payment_method: initialData?.payment_method || "Cash",
       purchase_type: initialData?.purchase_type || "Purchase of Goods",
-      cost_center: initialData?.cost_center || "N/A",
+      cost_center: initialData?.cost_center || "",
       currency: initialData?.currency || "PHP",
       vendor: initialData?.vendor || "",
       payee: initialData?.payee || "",
       charge_to: initialData?.charge_to || "N/A",
       management_number: initialData?.management_number || "N/A",
+      fy_start: initialData?.fy_start ? new Date(initialData.fy_start) : undefined,
+      fy_end: initialData?.fy_end ? new Date(initialData.fy_end) : undefined,
       attachments: [],
       items: initialData?.items && initialData.items.length > 0 ? initialData.items.map((item: any) => ({
           item_title: item.item_title || "",
           quantity: item.quantity || 1,
           unit_price: item.unit_price || 0,
-          item_name: item.item_name || "",
           item_purpose: item.item_purpose || "",
           item_remarks: item.item_remarks || "",
           budget_code: item.budget_code || "",
+          budget_id: item.budget_id || undefined,
       })) : [
         {
           item_title: "",
           quantity: 1,
           unit_price: 0,
-          item_name: "",
           item_purpose: "",
           item_remarks: "",
           budget_code: "",
@@ -69,7 +80,7 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
 
   const attachments = form.watch("attachments");
 
-  async function onSubmit(values: any) {
+  async function onSubmit(values: any, isDraft = false) {
     const formData = new FormData();
     
     // Append top-level fields
@@ -88,6 +99,9 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
     formData.append("payee", values.payee);
     formData.append("charge_to", values.charge_to);
     formData.append("management_number", values.management_number);
+    formData.append("fy_start", values.fy_start ? values.fy_start.toISOString().split("T")[0] : "");
+    formData.append("fy_end", values.fy_end ? values.fy_end.toISOString().split("T")[0] : "");
+    formData.append("status_id", isDraft ? "7" : "1");
 
     // Append items as JSON string (standard approach for nested data in multipart)
     formData.append("items", JSON.stringify(values.items));
@@ -125,7 +139,7 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="relative space-y-8 pb-32">
+      <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="relative space-y-8 pb-32">
         <div className="space-y-8">
           {/* Main Content Area */}
           <Card className="shadow-sm border-none bg-card/60 backdrop-blur-sm">
@@ -133,7 +147,7 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
               <CardTitle className="text-xl font-bold">Procurement Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <DatePicker 
                   control={form.control} 
                   name="desired_delivery_date" 
@@ -154,8 +168,6 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
                   variant="select_by_name"
                   selectOptions={PAYMENT_METHOD_OPTIONS}
                 />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <Field
                   control={form.control}
                   name="purchase_type"
@@ -163,6 +175,8 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
                   variant="select_by_name"
                   selectOptions={PURCHASE_TYPE_OPTIONS}
                 />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <Field
                   control={form.control}
                   name="currency"
@@ -196,8 +210,12 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
                   control={form.control}
                   name="cost_center"
                   label="Cost Center"
-                  variant="select_by_name"
-                  selectOptions={COST_CENTER_OPTIONS}
+                  variant="combobox"
+                  selectOptions={costCenterOptions}
+                  onSelect={(option) => {
+                    if (option.fy_start) form.setValue("fy_start", new Date(option.fy_start), { shouldDirty: true, shouldValidate: true });
+                    if (option.fy_end) form.setValue("fy_end", new Date(option.fy_end), { shouldDirty: true, shouldValidate: true });
+                  }}
                 />
                 <Field
                   control={form.control}
@@ -291,20 +309,32 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
           <div className="max-w-screen-2xl mx-auto flex items-center justify-end gap-3">
             <Button 
               type="button" 
-              variant="outline" 
+              variant="ghost" 
               size="lg" 
-              className="h-10 px-8 hover:bg-muted font-medium transition-colors border-muted-foreground/20" 
+              className="h-10 px-8 hover:bg-muted font-medium transition-colors" 
               onClick={() => window.history.back()}
             >
-              Discard
+              Cancel
             </Button>
+            {["Draft", "draft"].includes(initialData?.status_id?.name || "") && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="lg" 
+                className="h-10 px-8 hover:bg-muted font-medium transition-colors border-muted-foreground/20" 
+                onClick={() => onSubmit(form.getValues(), true)}
+                disabled={isMutating}
+              >
+                Save as Draft
+              </Button>
+            )}
             <Button 
               type="submit" 
               size="lg" 
               className="min-w-[180px] h-10 text-sm font-bold shadow-md hover:shadow-lg transition-all" 
               disabled={isMutating}
             >
-              {isMutating ? "Processing..." : "Update Request"}
+              {isMutating ? "Processing..." : "Submit Request"}
             </Button>
           </div>
         </div>

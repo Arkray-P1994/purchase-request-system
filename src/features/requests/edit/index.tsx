@@ -4,18 +4,17 @@ import { ModeToggle } from "@/components/toggle";
 import { ConfigDrawer } from "@/components/layout/config-drawer";
 import { EditRequestForm } from "../components/forms/edit-form";
 import { useRequest } from "@/api/fetch-request";
-import { useParams } from "@tanstack/react-router";
+import { useUser } from "@/api/fetch-user";
+import { useSearch } from "@tanstack/react-router";
+import Spinner from "@/components/ui/spinner";
 
 export function EditRequestPage() {
-  const { requestId } = useParams({ from: "/purchase-request/requests/$requestId/edit" });
+  const { requestId } = useSearch({ from: "/purchase-request/requests/" }) as any;
   const { data: request, isLoading } = useRequest({ id: requestId });
+  const { user } = useUser();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+    return <Spinner />;
   }
 
   if (!request) {
@@ -26,12 +25,27 @@ export function EditRequestPage() {
     );
   }
 
-  if (request.status_id?.name !== "Pending") {
+  const isAdmin = user?.user?.role === "admin";
+  const isCreator = String(user?.user?.id) === String(request?.user_id?.id);
+  const canEdit = isAdmin || isCreator;
+
+  if (!["Pending", "Draft"].includes(request.status_id?.name || "")) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
         <h2 className="text-2xl font-bold">Editing Forbidden</h2>
         <p className="text-muted-foreground text-center">
-          Only requests with <span className="font-bold text-orange-500">Pending</span> status can be edited.
+          Only requests with <span className="font-bold text-orange-500">Pending</span> or <span className="font-bold text-slate-500">Draft</span> status can be edited.
+        </p>
+      </div>
+    );
+  }
+
+  if (!canEdit) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <h2 className="text-2xl font-bold text-destructive">Unauthorized Access</h2>
+        <p className="text-muted-foreground text-center">
+          You do not have permission to edit this request. Only the creator or an administrator can modify it.
         </p>
       </div>
     );

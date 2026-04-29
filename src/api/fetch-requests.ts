@@ -1,7 +1,10 @@
 import { baseUrl } from "@/lib/base-url";
 import useSWR from "swr";
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = (url: string) =>
+  fetch(url, {
+    credentials: "include",
+  }).then((res) => res.json());
 
 export function useRequests({
   page,

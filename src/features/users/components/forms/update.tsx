@@ -28,7 +28,7 @@ export default function UpdateUserForm({
   action,
   setOpen,
 }: UserCreateFormProps) {
-  const { data: teams, isLoading: teamsLoading } = useTeams();
+  const { teams, isLoading: teamsLoading } = useTeams();
   const { trigger, isMutating } = useCreateUser();
   const { trigger: updateTrigger, isMutating: updateMutating } = useUpdateUser({
     id: Number(data?.id),
@@ -97,7 +97,7 @@ export default function UpdateUserForm({
               name="team_id"
               label="Team"
               variant="select"
-              options={teams.data}
+              options={teams}
             />
             <FormActions
               action={action}

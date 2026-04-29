@@ -11,45 +11,65 @@ import { ItemsSection } from "./items-section";
 import { useCreateRequest } from "../../actions/create-request";
 import { useUser } from "@/api/fetch-user";
 import { DatePicker } from "@/components/date-picker";
-import { 
-  COST_CENTER_OPTIONS, 
-  CHARGE_TO_OPTIONS, 
+import {
+  CHARGE_TO_OPTIONS,
   MANAGEMENT_NUMBER_OPTIONS,
   TRANSACTION_TYPE_OPTIONS,
   PAYMENT_METHOD_OPTIONS,
   PURCHASE_TYPE_OPTIONS,
-  CURRENCY_OPTIONS
+  CURRENCY_OPTIONS,
 } from "../../data/options";
+import { useBudgetEntries } from "@/api/fetch-budget";
 
 import { Paperclip, X, FileIcon, UploadCloud } from "lucide-react";
 
 export function CreateRequestForm() {
   const { user } = useUser();
+  const { data: budgetEntries } = useBudgetEntries();
   const { trigger, isMutating } = useCreateRequest();
+  const teams: { id: number; name: string }[] = user?.user?.teams ?? [];
+  const hasMultipleTeams = teams.length > 1;
+
+  const costCenterOptions = budgetEntries
+    ? budgetEntries.map((b: any) => ({
+        name: `${b.unq_code} - ${b.name}`,
+        fy_start: b.fy_start,
+        fy_end: b.fy_end,
+      }))
+    : [];
+
+  const now = new Date();
+  const currentMonth = now.getMonth(); // 0-indexed, Oct is 9, Nov is 10
+  const startYear = currentMonth >= 10 ? now.getFullYear() : now.getFullYear() - 1;
+  const defaultFyStart = new Date(startYear, 10, 1);
+  const defaultFyEnd = new Date(startYear + 1, 9, 31);
 
   const form = useForm<CreateRequestValues>({
     resolver: zodResolver(createRequestSchema) as any,
     defaultValues: {
+      team_id: teams.length === 1 ? String(teams[0].id) : "",
       desired_delivery_date: new Date(),
       transaction_type: "Vendor Payment",
       payment_method: "Cash",
       purchase_type: "Purchase of Goods",
-      cost_center: "N/A",
+      cost_center: "",
       currency: "PHP",
       vendor: "",
       payee: "",
       charge_to: "N/A",
       management_number: "N/A",
+      fy_start: defaultFyStart,
+      fy_end: defaultFyEnd,
       attachments: [],
       items: [
         {
           item_title: "",
           quantity: 1,
           unit_price: 0,
-          item_name: "",
           item_purpose: "",
           item_remarks: "",
           budget_code: "",
+          budget_id: undefined,
         },
       ],
     },
@@ -57,16 +77,20 @@ export function CreateRequestForm() {
 
   const attachments = form.watch("attachments");
 
-  async function onSubmit(values: any) {
+  async function onSubmit(values: any, isDraft = false) {
     const formData = new FormData();
-    
+
     // Append top-level fields
     formData.append("user_id", String(user?.user?.id || ""));
-    
+    formData.append("team_id", values.team_id);
+
     if (values.desired_delivery_date) {
-      formData.append("desired_delivery_date", values.desired_delivery_date.toISOString().split('T')[0]);
+      formData.append(
+        "desired_delivery_date",
+        values.desired_delivery_date.toISOString().split("T")[0],
+      );
     }
-    
+
     formData.append("transaction_type", values.transaction_type);
     formData.append("payment_method", values.payment_method);
     formData.append("purchase_type", values.purchase_type);
@@ -76,6 +100,9 @@ export function CreateRequestForm() {
     formData.append("payee", values.payee);
     formData.append("charge_to", values.charge_to);
     formData.append("management_number", values.management_number);
+    formData.append("fy_start", values.fy_start ? values.fy_start.toISOString().split("T")[0] : "");
+    formData.append("fy_end", values.fy_end ? values.fy_end.toISOString().split("T")[0] : "");
+    formData.append("status_id", isDraft ? "7" : "1");
 
     // Append items as JSON string (standard approach for nested data in multipart)
     formData.append("items", JSON.stringify(values.items));
@@ -96,35 +123,56 @@ export function CreateRequestForm() {
 
     const currentAttachments = form.getValues("attachments") || [];
     const newFiles = Array.from(files);
-    
-    form.setValue("attachments", [...currentAttachments, ...newFiles], { 
+
+    form.setValue("attachments", [...currentAttachments, ...newFiles], {
       shouldValidate: true,
-      shouldDirty: true 
+      shouldDirty: true,
     });
   };
 
   const removeAttachment = (index: number) => {
     const currentAttachments = form.getValues("attachments");
-    form.setValue("attachments", currentAttachments.filter((_, i) => i !== index), {
-      shouldValidate: true,
-      shouldDirty: true
-    });
+    form.setValue(
+      "attachments",
+      currentAttachments.filter((_, i) => i !== index),
+      {
+        shouldValidate: true,
+        shouldDirty: true,
+      },
+    );
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="relative space-y-8 pb-32">
+      <form
+        onSubmit={form.handleSubmit((v) => onSubmit(v, false))}
+        className="relative space-y-8 pb-32"
+      >
         <div className="space-y-8">
           {/* Main Content Area */}
           <Card className="shadow-sm border-none bg-card/60 backdrop-blur-sm">
             <CardHeader className="pb-4">
-              <CardTitle className="text-xl font-bold">Procurement Details</CardTitle>
+              <CardTitle className="text-xl font-bold">
+                Procurement Details
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <DatePicker 
-                  control={form.control} 
-                  name="desired_delivery_date" 
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {hasMultipleTeams && (
+                  <Field
+                    control={form.control}
+                    name="team_id"
+                    label="Team"
+                    variant="select_by_id"
+                    selectOptions={teams.map((t) => ({
+                      id: t.id,
+                      name: t.name,
+                    }))}
+                  />
+                )}
+                <DatePicker
+                  control={form.control}
+                  name="desired_delivery_date"
                   label="Desired Delivery Date"
                   placeholder="When is this needed?"
                 />
@@ -176,7 +224,9 @@ export function CreateRequestForm() {
 
           <Card className="shadow-sm border-none bg-card/60 backdrop-blur-sm">
             <CardHeader className="pb-4">
-              <CardTitle className="text-lg font-bold">Accounting Reference</CardTitle>
+              <CardTitle className="text-lg font-bold">
+                Accounting Reference
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -184,8 +234,12 @@ export function CreateRequestForm() {
                   control={form.control}
                   name="cost_center"
                   label="Cost Center"
-                  variant="select_by_name"
-                  selectOptions={COST_CENTER_OPTIONS}
+                  variant="combobox"
+                  selectOptions={costCenterOptions}
+                  onSelect={(option) => {
+                    if (option.fy_start) form.setValue("fy_start", new Date(option.fy_start), { shouldDirty: true, shouldValidate: true });
+                    if (option.fy_end) form.setValue("fy_end", new Date(option.fy_end), { shouldDirty: true, shouldValidate: true });
+                  }}
                 />
                 <Field
                   control={form.control}
@@ -236,7 +290,9 @@ export function CreateRequestForm() {
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-semibold">Click or drag files</p>
-                    <p className="text-xs text-muted-foreground mt-1">PDF, Excel, Images up to 10MB</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      PDF, Excel, Images up to 10MB
+                    </p>
                   </div>
                 </div>
               </div>
@@ -244,7 +300,7 @@ export function CreateRequestForm() {
               {attachments && attachments.length > 0 && (
                 <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
                   {attachments.map((file, index) => (
-                    <div 
+                    <div
                       key={`${file.name}-${index}`}
                       className="flex items-center justify-between p-3 rounded-lg bg-background border shadow-sm group animate-in fade-in slide-in-from-top-1 duration-200"
                     >
@@ -253,7 +309,9 @@ export function CreateRequestForm() {
                           <FileIcon className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="text-xs font-semibold truncate pr-2">{file.name}</span>
+                          <span className="text-xs font-semibold truncate pr-2">
+                            {file.name}
+                          </span>
                           <span className="text-[10px] text-muted-foreground font-medium">
                             {(file.size / 1024 / 1024).toFixed(2)} MB
                           </span>
@@ -279,19 +337,29 @@ export function CreateRequestForm() {
         {/* Sticky Footer */}
         <div className="fixed bottom-0 left-0 right-0 lg:left-[var(--sidebar-width,0px)] bg-background/80 backdrop-blur-xl border-t z-50 px-6 py-4 shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)]">
           <div className="max-w-screen-2xl mx-auto flex items-center justify-end gap-3">
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="lg" 
-              className="h-10 px-8 hover:bg-muted font-medium transition-colors border-muted-foreground/20" 
+            <Button
+              type="button"
+              variant="ghost"
+              size="lg"
+              className="h-10 px-8 hover:bg-muted font-medium transition-colors"
               onClick={() => window.history.back()}
             >
-              Discard
+              Cancel
             </Button>
-            <Button 
-              type="submit" 
-              size="lg" 
-              className="min-w-[180px] h-10 text-sm font-bold shadow-md hover:shadow-lg transition-all" 
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              className="h-10 px-8 hover:bg-muted font-medium transition-colors border-muted-foreground/20"
+              onClick={() => onSubmit(form.getValues(), true)}
+              disabled={isMutating}
+            >
+              Save as Draft
+            </Button>
+            <Button
+              type="submit"
+              size="lg"
+              className="min-w-[180px] h-10 text-sm font-bold shadow-md hover:shadow-lg transition-all"
               disabled={isMutating}
             >
               {isMutating ? "Processing..." : "Create Request"}

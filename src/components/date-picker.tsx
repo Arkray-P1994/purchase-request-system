@@ -40,7 +40,7 @@ export function DatePicker<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field }) => (
-        <FormItem className="flex flex-col">
+        <FormItem>
           {label && <FormLabel className="text-xs font-semibold">{label}</FormLabel>}
           <Popover open={calendarOpen} onOpenChange={setCalendarOpen} modal>
             <PopoverTrigger asChild>
@@ -48,7 +48,7 @@ export function DatePicker<T extends FieldValues>({
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full pl-3 text-left font-normal border-muted-foreground h-9",
+                    "w-full pl-3 text-left font-normal border-muted-foreground text-xs",
                     !field.value && "text-muted-foreground"
                   )}
                 >

@@ -1,18 +1,3 @@
-export const COST_CENTER_OPTIONS = [
-  { name: "863050 - HRGA" },
-  { name: "863150 - ACCTG" },
-  { name: "863220 - R&D GEC" },
-  { name: "863300 - RMT" },
-  { name: "863310 - IMT" },
-  { name: "863600 - QA" },
-  { name: "863650 - QC" },
-  { name: "863550 - LOG (Planning & IMPEX)" },
-  { name: "863560 - LPT (Purchasing & Warehouse)" },
-  { name: "863570 - PET (Instrument PE)" },
-  { name: "863590 - PET (Reagent PE)" },
-  { name: "N/A" },
-];
-
 export const CHARGE_TO_OPTIONS = [
   { name: "PHF" },
   { name: "AFC" },

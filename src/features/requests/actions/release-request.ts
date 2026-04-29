@@ -31,9 +31,9 @@ async function request(url: string, payload?: object) {
 
 const post = (url: string, { arg }: { arg?: object }) => request(url, arg);
 
-export function useDisapproveRequest(id: string | number) {
+export function useReleaseRequest(id: string | number) {
   const { mutate } = useSWRConfig();
-  const API_URL = `${baseUrl}/request/disapprove/${id}`;
+  const API_URL = `${baseUrl}/request/release/${id}`;
 
   return useSWRMutation<unknown, Error, string, object>(
     API_URL,
@@ -42,10 +42,10 @@ export function useDisapproveRequest(id: string | number) {
       onSuccess: () => {
         mutate((key) => typeof key === "string" && key.includes(`${baseUrl}/request/${id}`));
         mutate((key) => typeof key === "string" && key.includes(`${baseUrl}/requests`));
-        showSuccessToast("Request disapproved");
+        showSuccessToast("Request released successfully");
       },
       onError: (err: any) => {
-        showErrorToast(err?.message || "Failed to disapprove request");
+        showErrorToast(err?.message || "Failed to release request");
       },
     }
   );

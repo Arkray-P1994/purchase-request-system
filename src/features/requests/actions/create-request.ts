@@ -14,6 +14,7 @@ async function request(url: string, payload?: FormData | object) {
 
   const res = await fetch(url, {
     method: "POST",
+    credentials: "include",
     body: payload
       ? isFormData
         ? (payload as FormData)

@@ -1,48 +1,90 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2 } from "lucide-react";
-import { Field } from "@/components/forms/form-field";
+import { Plus } from "lucide-react";
 import { CreateRequestValues } from "../schema";
+import { useBudgetEntries } from "@/api/fetch-budget";
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useEffect } from "react";
+import { ItemTableRow } from "./item-table-row";
+import { ItemMobileCard } from "./item-mobile-card";
 
 export function ItemsSection() {
-  const { control, watch } = useFormContext<CreateRequestValues>();
+  const { control, watch, setValue, setError, clearErrors } = useFormContext<CreateRequestValues>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "items",
   });
 
-  const items = watch("items");
-  const totalAmount = items?.reduce((sum, item) => sum + (Number(item.quantity || 0) * Number(item.unit_price || 0)), 0) || 0;
+  const { data: budgetEntries } = useBudgetEntries();
+  const items = watch("items") || [];
+  const costCenter = watch("cost_center");
+
+  const selectedEntry = budgetEntries?.find(
+    (b: any) =>
+      `${b.unq_code} - ${b.name}` === costCenter ||
+      `${b.name} - ${b.unq_code}` === costCenter,
+  );
+
+  const budgetCodeOptions =
+    selectedEntry?.budgetEntries?.map((item: any) => ({
+      id: item.id,
+      name: `${item.account_code} - ${item.item_name}`,
+      balance: Number(item.budget_base || 0),
+    })) || [];
+
+  const totalAmount =
+    items.reduce(
+      (sum: number, item: any) =>
+        sum + (Number(item.quantity) || 0) * (Number(item.unit_price) || 0),
+      0,
+    );
+
+  useEffect(() => {
+    items.forEach((item: any, index: number) => {
+      const option = budgetCodeOptions.find((opt: any) => opt.name === item.budget_code);
+      if (option) {
+        const itemTotal = (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
+        if (itemTotal > option.balance) {
+          setError(`items.${index}.unit_price` as any, {
+            type: "manual",
+            message: "Insufficient budget",
+          });
+        } else {
+          clearErrors(`items.${index}.unit_price` as any);
+        }
+      }
+    });
+  }, [items, budgetCodeOptions, setError, clearErrors]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 w-full min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-xl font-bold tracking-tight">Request Items</h3>
-          <p className="text-sm text-muted-foreground">List all items for this procurement request.</p>
+          <h3 className="text-xl font-bold tracking-tight text-foreground">Request Items</h3>
+          <p className="text-sm text-muted-foreground">
+            List all items for this procurement request.
+          </p>
         </div>
         <Button
           type="button"
           variant="outline"
           size="sm"
-          className="shadow-sm hover:shadow-md transition-all h-9"
+          className="shadow-sm hover:shadow-md transition-all h-9 w-full sm:w-auto"
           onClick={() =>
             append({
               item_title: "",
-              item_name: "",
               quantity: 1,
               unit_price: 0,
               item_purpose: "",
               item_remarks: "",
               budget_code: "",
+              budget_id: undefined,
             })
           }
         >
@@ -51,159 +93,124 @@ export function ItemsSection() {
         </Button>
       </div>
 
-      <div className="border rounded-xl bg-card overflow-x-auto shadow-sm">
-        <Table>
-          <TableHeader className="bg-muted/50 border-b-2">
-            <TableRow className="hover:bg-transparent">
-              <TableHead className="w-[50px] text-center font-bold border-r">#</TableHead>
-              <TableHead className="min-w-[150px] font-bold border-r">TITLE</TableHead>
-              <TableHead className="min-w-[140px] font-bold border-r">BUDGET CODE</TableHead>
-              <TableHead className="min-w-[150px] font-bold border-r">ITEM NAME</TableHead>
-              <TableHead className="min-w-[150px] font-bold border-r">PURPOSE</TableHead>
-              <TableHead className="w-[120px] font-bold border-r">UNIT PRICE</TableHead>
-              <TableHead className="w-[80px] font-bold border-r">QTY</TableHead>
-              <TableHead className="w-[120px] text-right font-bold border-r">TOTAL PRICE</TableHead>
-              <TableHead className="min-w-[150px] font-bold border-r">REMARKS</TableHead>
-              <TableHead className="w-[50px] text-center"></TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {fields.map((field, index) => (
-              <TableRow key={field.id} className="group hover:bg-muted/30 transition-colors border-b">
-                <TableCell className="text-center font-medium text-muted-foreground p-3 border-r">
-                  {index + 1}
-                </TableCell>
-                <TableCell className="p-2 border-r">
-                  <Field
-                    control={control}
-                    name={`items.${index}.item_title`}
-                    label="Title"
-                    placeholder="Title"
-                    variant="input"
-                    hideLabel
-                    className="h-9 text-xs shadow-sm focus-visible:ring-1"
-                  />
-                </TableCell>
-                <TableCell className="p-2 border-r">
-                  <Field
-                    control={control}
-                    name={`items.${index}.budget_code`}
-                    label="Budget Code"
-                    placeholder="Code"
-                    variant="input"
-                    hideLabel
-                    className="h-9 text-xs shadow-sm focus-visible:ring-1"
-                  />
-                </TableCell>
-                <TableCell className="p-2 border-r">
-                  <Field
-                    control={control}
-                    name={`items.${index}.item_name`}
-                    label="Item Name"
-                    placeholder="Name"
-                    variant="input"
-                    hideLabel
-                    className="h-9 text-xs shadow-sm focus-visible:ring-1"
-                  />
-                </TableCell>
-                <TableCell className="p-2 border-r">
-                  <Field
-                    control={control}
-                    name={`items.${index}.item_purpose`}
-                    label="Purpose"
-                    placeholder="Purpose"
-                    variant="input"
-                    hideLabel
-                    className="h-9 text-xs shadow-sm focus-visible:ring-1"
-                  />
-                </TableCell>
-                <TableCell className="p-2 border-r">
-                  <Field
-                    control={control}
-                    name={`items.${index}.unit_price`}
-                    label="Price"
-                    type="number"
-                    variant="input"
-                    hideLabel
-                    className="h-9 text-xs shadow-sm focus-visible:ring-1 text-right font-mono"
-                  />
-                </TableCell>
-                <TableCell className="p-2 border-r">
-                  <Field
-                    control={control}
-                    name={`items.${index}.quantity`}
-                    label="Qty"
-                    type="number"
-                    variant="input"
-                    hideLabel
-                    className="h-9 text-xs shadow-sm focus-visible:ring-1 text-center font-mono"
-                  />
-                </TableCell>
-                <TableCell className="p-3 text-right font-bold text-xs whitespace-nowrap border-r bg-muted/5">
-                  {new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(
-                    Number(items[index]?.quantity || 0) * Number(items[index]?.unit_price || 0)
-                  )}
-                </TableCell>
-                <TableCell className="p-2">
-                  <Field
-                    control={control}
-                    name={`items.${index}.item_remarks`}
-                    label="Remarks"
-                    placeholder="Remarks"
-                    variant="input"
-                    hideLabel
-                    className="h-9 text-xs shadow-sm focus-visible:ring-1"
-                  />
-                </TableCell>
-                <TableCell className="p-2 text-center">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all border shadow-sm"
-                    onClick={() => remove(index)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
+      <div className="border rounded-xl bg-card shadow-sm overflow-hidden flex flex-col w-full">
+        {/* Desktop View: Table */}
+        <div className="hidden xl:block w-full overflow-x-auto relative">
+          <div className="min-w-[1000px] w-full">
+            <Table>
+              <TableHeader className="bg-muted/50 border-b-2">
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-[50px] text-center font-bold border-r text-[10px] uppercase tracking-wider">#</TableHead>
+                  <TableHead className="w-[200px] font-bold border-r text-[10px] uppercase tracking-wider">Item Title</TableHead>
+                  <TableHead className="w-[200px] font-bold border-r text-[10px] uppercase tracking-wider text-primary">Budget Code</TableHead>
+                  <TableHead className="w-[200px] font-bold border-r text-[10px] uppercase tracking-wider">Purpose</TableHead>
+                  <TableHead className="w-[120px] font-bold border-r text-[10px] uppercase tracking-wider">Unit Price</TableHead>
+                  <TableHead className="w-[80px] font-bold border-r text-[10px] uppercase tracking-wider">Qty</TableHead>
+                  <TableHead className="w-[140px] text-right font-bold border-r text-[10px] uppercase tracking-wider bg-primary/5 text-primary">Total</TableHead>
+                  <TableHead className="w-[200px] font-bold border-r text-[10px] uppercase tracking-wider">Remarks</TableHead>
+                  <TableHead className="w-[60px] text-center"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {fields.map((field, index) => {
+                  const item = items[index];
+                  const selectedBudget = budgetCodeOptions.find((opt: any) => opt.name === item?.budget_code);
+                  const isOverBudget = selectedBudget && ((Number(item?.quantity) || 0) * (Number(item?.unit_price) || 0)) > selectedBudget.balance;
 
-            {fields.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={10} className="h-40 text-center">
-                   <div className="flex flex-col items-center justify-center space-y-3">
-                    <p className="text-muted-foreground">No items added to this request yet.</p>
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => append({
-                        item_title: "",
-                        budget_code: "",
-                        item_name: "",
-                        quantity: 1,
-                        unit_price: 0,
-                        item_purpose: "",
-                        item_remarks: "",
-                      })}
-                    >
-                      <Plus className="mr-2 h-4 w-4" />
-                      Add First Item
-                    </Button>
-                   </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  return (
+                    <ItemTableRow
+                      key={field.id}
+                      index={index}
+                      control={control}
+                      item={item}
+                      budgetCodeOptions={budgetCodeOptions}
+                      selectedBudget={selectedBudget}
+                      isOverBudget={!!isOverBudget}
+                      onRemove={remove}
+                      onBudgetSelect={(option: any) => {
+                        setValue(`items.${index}.budget_id` as any, Number(option.id), { shouldDirty: true, shouldValidate: true });
+                      }}
+                    />
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+
+        {/* Mobile View: Cards */}
+        <div className="xl:hidden divide-y divide-border">
+          {fields.map((field, index) => {
+            const item = items[index];
+            const selectedBudget = budgetCodeOptions.find((opt: any) => opt.name === item?.budget_code);
+            const isOverBudget = selectedBudget && ((Number(item?.quantity) || 0) * (Number(item?.unit_price) || 0)) > selectedBudget.balance;
+
+            return (
+              <ItemMobileCard
+                key={field.id}
+                index={index}
+                control={control}
+                item={item}
+                budgetCodeOptions={budgetCodeOptions}
+                selectedBudget={selectedBudget}
+                isOverBudget={!!isOverBudget}
+                onRemove={remove}
+                onBudgetSelect={(option: any) => {
+                  setValue(`items.${index}.budget_id` as any, Number(option.id), { shouldDirty: true, shouldValidate: true });
+                }}
+              />
+            );
+          })}
+        </div>
+
+        {fields.length === 0 && (
+          <div className="h-64 flex flex-col items-center justify-center space-y-4 p-8 text-center bg-muted/5">
+            <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center text-muted-foreground mb-2">
+              <Plus className="h-6 w-6" />
+            </div>
+            <div className="space-y-1">
+              <p className="font-bold text-foreground">No items added yet</p>
+              <p className="text-sm text-muted-foreground max-w-[240px]">
+                Start adding items to your procurement request by clicking the button below.
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="mt-2"
+              onClick={() =>
+                append({
+                  item_title: "",
+                  budget_code: "",
+                  quantity: 1,
+                  unit_price: 0,
+                  item_purpose: "",
+                  item_remarks: "",
+                  budget_id: undefined,
+                })
+              }
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Add First Item
+            </Button>
+          </div>
+        )}
 
         {fields.length > 0 && (
-          <div className="flex justify-end items-center p-6 bg-muted/30 border-t gap-6">
-            <span className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Total Estimated Amount</span>
-            <span className="text-3xl font-extrabold text-primary">
-              {new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(totalAmount)}
-            </span>
+          <div className="flex flex-col sm:flex-row justify-between items-center p-6 bg-muted/30 border-t gap-4 w-full">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <span className="text-[10px] font-bold uppercase tracking-widest">{fields.length} {fields.length === 1 ? 'Item' : 'Items'}</span>
+            </div>
+            <div className="flex flex-col items-center sm:items-end gap-1">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Total Estimated Amount</span>
+              <span className="text-3xl font-black text-primary drop-shadow-sm">
+                {new Intl.NumberFormat("en-PH", {
+                  style: "currency",
+                  currency: "PHP",
+                }).format(totalAmount)}
+              </span>
+            </div>
           </div>
         )}
       </div>

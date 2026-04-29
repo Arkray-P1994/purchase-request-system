@@ -1,4 +1,3 @@
-import { baseUrl } from "@/lib/base-url";
 import useSWR from "swr";
 
 const fetcher = (url: string) =>
@@ -15,8 +14,8 @@ const fetcher = (url: string) =>
     return res.json();
   });
 
-export function useRequest({ id }: { id: number | string }) {
-  const url = id ? `${baseUrl}/request/${id}` : null;
+export function useBudgetEntries() {
+  const url = `${import.meta.env.VITE_BUDGET_URL}/budget-entries`;
 
   const { data, error, isLoading } = useSWR(url, fetcher);
 

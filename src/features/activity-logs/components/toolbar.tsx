@@ -1,0 +1,70 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Cross2Icon } from "@radix-ui/react-icons";
+import { type Table } from "@tanstack/react-table";
+import { debounce, useQueryState } from "nuqs";
+
+import { DataTableViewOptions } from "@/components/data-table";
+
+type DataTableToolbarProps<TData> = {
+  table: Table<TData>;
+  searchPlaceholder?: string;
+};
+
+export function DataTableToolbar<TData>({
+  table,
+  searchPlaceholder = "Filter...",
+}: DataTableToolbarProps<TData>) {
+  const [filter, setfilter] = useQueryState("filter", {
+    defaultValue: "",
+    shallow: true,
+    clearOnDefault: true,
+    limitUrlUpdates: debounce(500),
+  });
+
+  const [page, setPage] = useQueryState("page", {
+    defaultValue: "1",
+    shallow: true,
+  });
+
+  const handleSearchChange = async (value: string | null) => {
+    await setfilter(value || null);
+    if (page !== "1") {
+      await setPage(null);
+    }
+  };
+
+  const isFiltered = filter !== "" || table.getState().columnFilters.length > 0;
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex flex-1 flex-col-reverse items-start gap-y-2 sm:flex-row sm:items-center sm:space-x-2">
+        <Input
+          placeholder={searchPlaceholder}
+          value={filter ?? ""}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          className="h-8 w-[150px] lg:w-[250px]"
+        />
+
+        {isFiltered && (
+          <Button
+            variant="ghost"
+            onClick={() => {
+              table.resetColumnFilters();
+              table.setGlobalFilter("");
+              setfilter(null);
+              setPage(null);
+            }}
+            className="h-8 px-2 lg:px-3"
+          >
+            Reset
+            <Cross2Icon className="ms-2 h-4 w-4" />
+          </Button>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <DataTableViewOptions table={table} />
+      </div>
+    </div>
+  );
+}

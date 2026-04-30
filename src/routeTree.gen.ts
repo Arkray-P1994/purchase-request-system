@@ -14,6 +14,7 @@ import { Route as AssetInventoryRouteRouteImport } from './routes/asset-inventor
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PurchaseRequestIndexRouteImport } from './routes/purchase-request/index'
 import { Route as LoginIndexRouteImport } from './routes/login/index'
+import { Route as HistoryIndexRouteImport } from './routes/history/index'
 import { Route as AssetInventoryIndexRouteImport } from './routes/asset-inventory/index'
 import { Route as PurchaseRequestUsersIndexRouteImport } from './routes/purchase-request/users/index'
 import { Route as PurchaseRequestTeamApproversIndexRouteImport } from './routes/purchase-request/team-approvers.index'
@@ -53,6 +54,11 @@ const PurchaseRequestIndexRoute = PurchaseRequestIndexRouteImport.update({
 const LoginIndexRoute = LoginIndexRouteImport.update({
   id: '/login/',
   path: '/login/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryIndexRoute = HistoryIndexRouteImport.update({
+  id: '/history/',
+  path: '/history/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AssetInventoryIndexRoute = AssetInventoryIndexRouteImport.update({
@@ -149,6 +155,7 @@ export interface FileRoutesByFullPath {
   '/asset-inventory': typeof AssetInventoryRouteRouteWithChildren
   '/purchase-request': typeof PurchaseRequestRouteRouteWithChildren
   '/asset-inventory/': typeof AssetInventoryIndexRoute
+  '/history': typeof HistoryIndexRoute
   '/login': typeof LoginIndexRoute
   '/purchase-request/': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
@@ -169,6 +176,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/asset-inventory': typeof AssetInventoryIndexRoute
+  '/history': typeof HistoryIndexRoute
   '/login': typeof LoginIndexRoute
   '/purchase-request': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/asset-inventory': typeof AssetInventoryRouteRouteWithChildren
   '/purchase-request': typeof PurchaseRequestRouteRouteWithChildren
   '/asset-inventory/': typeof AssetInventoryIndexRoute
+  '/history/': typeof HistoryIndexRoute
   '/login/': typeof LoginIndexRoute
   '/purchase-request/': typeof PurchaseRequestIndexRoute
   '/asset-inventory/assets/$id': typeof AssetInventoryAssetsIdRoute
@@ -216,6 +225,7 @@ export interface FileRouteTypes {
     | '/asset-inventory'
     | '/purchase-request'
     | '/asset-inventory/'
+    | '/history'
     | '/login'
     | '/purchase-request/'
     | '/asset-inventory/assets/$id'
@@ -236,6 +246,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/asset-inventory'
+    | '/history'
     | '/login'
     | '/purchase-request'
     | '/asset-inventory/assets/$id'
@@ -258,6 +269,7 @@ export interface FileRouteTypes {
     | '/asset-inventory'
     | '/purchase-request'
     | '/asset-inventory/'
+    | '/history/'
     | '/login/'
     | '/purchase-request/'
     | '/asset-inventory/assets/$id'
@@ -280,6 +292,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AssetInventoryRouteRoute: typeof AssetInventoryRouteRouteWithChildren
   PurchaseRequestRouteRoute: typeof PurchaseRequestRouteRouteWithChildren
+  HistoryIndexRoute: typeof HistoryIndexRoute
   LoginIndexRoute: typeof LoginIndexRoute
 }
 
@@ -318,6 +331,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history/': {
+      id: '/history/'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/asset-inventory/': {
@@ -484,6 +504,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AssetInventoryRouteRoute: AssetInventoryRouteRouteWithChildren,
   PurchaseRequestRouteRoute: PurchaseRequestRouteRouteWithChildren,
+  HistoryIndexRoute: HistoryIndexRoute,
   LoginIndexRoute: LoginIndexRoute,
 }
 export const routeTree = rootRouteImport

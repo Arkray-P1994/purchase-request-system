@@ -47,26 +47,28 @@ export function ConfigDrawer() {
           <Settings aria-hidden="true" />
         </Button>
       </SheetTrigger>
-      <SheetContent className="flex flex-col">
-        <SheetHeader className="pb-0 text-start">
-          <SheetTitle>Theme Settings</SheetTitle>
+      <SheetContent className="flex flex-col p-0">
+        <SheetHeader className="p-6 pb-2 text-start">
+          <SheetTitle className="text-xl">Theme Settings</SheetTitle>
           <SheetDescription id="config-drawer-description">
             Adjust the appearance and layout to suit your preferences.
           </SheetDescription>
         </SheetHeader>
-        <div className="space-y-6 overflow-y-auto px-4">
+        <div className="flex-1 space-y-8 overflow-y-auto p-6 pt-2">
           {/* <ThemeConfig /> */}
           <SidebarConfig />
           <LayoutConfig />
           {/* <DirConfig /> */}
         </div>
-        <SheetFooter className="gap-2">
+        <SheetFooter className="p-6 pt-2 gap-2 border-t bg-muted/20">
           <Button
             variant="destructive"
             onClick={handleReset}
+            className="w-full shadow-sm hover:shadow-md transition-all"
             aria-label="Reset all settings to default values"
           >
-            Reset
+            <RotateCcw className="mr-2 size-4" />
+            Reset Defaults
           </Button>
         </SheetFooter>
       </SheetContent>
@@ -88,7 +90,7 @@ function SectionTitle({
   return (
     <div
       className={cn(
-        "text-muted-foreground mb-2 flex items-center gap-2 text-sm font-semibold",
+        "text-muted-foreground mb-4 flex items-center gap-2 text-sm font-bold uppercase tracking-wider",
         className
       )}
     >

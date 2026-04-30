@@ -83,3 +83,37 @@ export function useActivityLogs({
     isLoading,
   };
 }
+
+export function useApprovalLogs({
+  page,
+  limit,
+  filter,
+  sort,
+}: {
+  page?: string;
+  limit?: string;
+  filter?: string;
+  sort?: string;
+} = {}) {
+  const params = new URLSearchParams();
+
+  if (page) params.append("page", page);
+  if (limit) params.append("limit", limit);
+  if (filter) params.append("search", filter);
+  if (sort) params.append("sort", sort);
+
+  const url =
+    params.toString().length > 0
+      ? `${baseUrl}/approval-logs?${params.toString()}`
+      : `${baseUrl}/approval-logs`;
+
+  const { data, error, isLoading } = useSWR(url, fetcher, {
+    keepPreviousData: true,
+  });
+
+  return {
+    data,
+    error,
+    isLoading,
+  };
+}

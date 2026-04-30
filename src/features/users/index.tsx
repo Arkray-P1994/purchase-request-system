@@ -8,7 +8,7 @@ import { ModeToggle } from "@/components/toggle";
 import { useQueryState } from "nuqs";
 import { DataTable } from "./components/table";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
 import { useState } from "react";
 import { CreateUserForm } from "./components/forms/create-form";
 
@@ -39,15 +39,20 @@ export function UsersPage() {
         </div>
       </Header>
       <Main>
-        <div className="mb-2 flex flex-wrap items-center justify-between space-y-2 gap-x-4">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">User List</h2>
-            <p className="text-muted-foreground">
-              Manage system users and their team assignments.
-            </p>
+        <div className="mb-4 flex flex-wrap items-center justify-between space-y-2 gap-x-4 border-b pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+               <Users className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">System Users</h2>
+              <p className="text-muted-foreground text-sm">
+                Manage system users and their team assignments.
+              </p>
+            </div>
           </div>
           <div className="flex gap-2">
-            <Button onClick={() => setIsCreateOpen(true)}>
+            <Button onClick={() => setIsCreateOpen(true)} size="lg" className="shadow-md">
               <Plus className="mr-2 h-4 w-4" /> Add User
             </Button>
           </div>

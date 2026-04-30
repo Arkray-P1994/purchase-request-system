@@ -2,6 +2,7 @@ import { DataTableColumnHeader } from "@/components/data-table/column-header";
 import { type ColumnDef } from "@tanstack/react-table";
 import moment from "moment";
 import { LogViewDrawer } from "./log-view-drawer";
+import { Link } from "@tanstack/react-router";
 
 export type ActivityLog = {
   id: number;
@@ -10,6 +11,7 @@ export type ActivityLog = {
     name: string;
   };
   request_id?: {
+    id: number;
     ticket_id: string;
   };
   properties?: any;
@@ -41,7 +43,17 @@ export const Columns: ColumnDef<ActivityLog>[] = [
     ),
     cell: ({ row }) => {
       const request = row.original.request_id;
-      return <span className="font-mono text-xs">{request?.ticket_id || "N/A"}</span>;
+      if (!request) return <span className="font-mono text-xs">N/A</span>;
+      
+      return (
+        <Link 
+          to="/purchase-request/requests" 
+          search={{ requestId: String(request.id) }}
+          className="font-mono text-xs font-bold text-primary hover:underline"
+        >
+          {request.ticket_id}
+        </Link>
+      );
     },
   },
   {

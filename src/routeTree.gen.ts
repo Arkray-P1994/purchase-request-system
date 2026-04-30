@@ -17,6 +17,7 @@ import { Route as LoginIndexRouteImport } from './routes/login/index'
 import { Route as HistoryIndexRouteImport } from './routes/history/index'
 import { Route as AssetInventoryIndexRouteImport } from './routes/asset-inventory/index'
 import { Route as PurchaseRequestUsersIndexRouteImport } from './routes/purchase-request/users/index'
+import { Route as PurchaseRequestTimelineIndexRouteImport } from './routes/purchase-request/timeline.index'
 import { Route as PurchaseRequestTeamApproversIndexRouteImport } from './routes/purchase-request/team-approvers.index'
 import { Route as PurchaseRequestRequestsIndexRouteImport } from './routes/purchase-request/requests/index'
 import { Route as PurchaseRequestDashboardIndexRouteImport } from './routes/purchase-request/dashboard/index'
@@ -70,6 +71,12 @@ const PurchaseRequestUsersIndexRoute =
   PurchaseRequestUsersIndexRouteImport.update({
     id: '/users/',
     path: '/users/',
+    getParentRoute: () => PurchaseRequestRouteRoute,
+  } as any)
+const PurchaseRequestTimelineIndexRoute =
+  PurchaseRequestTimelineIndexRouteImport.update({
+    id: '/timeline/',
+    path: '/timeline/',
     getParentRoute: () => PurchaseRequestRouteRoute,
   } as any)
 const PurchaseRequestTeamApproversIndexRoute =
@@ -170,6 +177,7 @@ export interface FileRoutesByFullPath {
   '/purchase-request/dashboard': typeof PurchaseRequestDashboardIndexRoute
   '/purchase-request/requests': typeof PurchaseRequestRequestsIndexRoute
   '/purchase-request/team-approvers': typeof PurchaseRequestTeamApproversIndexRoute
+  '/purchase-request/timeline': typeof PurchaseRequestTimelineIndexRoute
   '/purchase-request/users': typeof PurchaseRequestUsersIndexRoute
   '/asset-inventory/assets/print': typeof AssetInventoryAssetsPrintIndexRoute
 }
@@ -191,6 +199,7 @@ export interface FileRoutesByTo {
   '/purchase-request/dashboard': typeof PurchaseRequestDashboardIndexRoute
   '/purchase-request/requests': typeof PurchaseRequestRequestsIndexRoute
   '/purchase-request/team-approvers': typeof PurchaseRequestTeamApproversIndexRoute
+  '/purchase-request/timeline': typeof PurchaseRequestTimelineIndexRoute
   '/purchase-request/users': typeof PurchaseRequestUsersIndexRoute
   '/asset-inventory/assets/print': typeof AssetInventoryAssetsPrintIndexRoute
 }
@@ -215,6 +224,7 @@ export interface FileRoutesById {
   '/purchase-request/dashboard/': typeof PurchaseRequestDashboardIndexRoute
   '/purchase-request/requests/': typeof PurchaseRequestRequestsIndexRoute
   '/purchase-request/team-approvers/': typeof PurchaseRequestTeamApproversIndexRoute
+  '/purchase-request/timeline/': typeof PurchaseRequestTimelineIndexRoute
   '/purchase-request/users/': typeof PurchaseRequestUsersIndexRoute
   '/asset-inventory/assets/print/': typeof AssetInventoryAssetsPrintIndexRoute
 }
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/purchase-request/dashboard'
     | '/purchase-request/requests'
     | '/purchase-request/team-approvers'
+    | '/purchase-request/timeline'
     | '/purchase-request/users'
     | '/asset-inventory/assets/print'
   fileRoutesByTo: FileRoutesByTo
@@ -261,6 +272,7 @@ export interface FileRouteTypes {
     | '/purchase-request/dashboard'
     | '/purchase-request/requests'
     | '/purchase-request/team-approvers'
+    | '/purchase-request/timeline'
     | '/purchase-request/users'
     | '/asset-inventory/assets/print'
   id:
@@ -284,6 +296,7 @@ export interface FileRouteTypes {
     | '/purchase-request/dashboard/'
     | '/purchase-request/requests/'
     | '/purchase-request/team-approvers/'
+    | '/purchase-request/timeline/'
     | '/purchase-request/users/'
     | '/asset-inventory/assets/print/'
   fileRoutesById: FileRoutesById
@@ -352,6 +365,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/purchase-request/users'
       preLoaderRoute: typeof PurchaseRequestUsersIndexRouteImport
+      parentRoute: typeof PurchaseRequestRouteRoute
+    }
+    '/purchase-request/timeline/': {
+      id: '/purchase-request/timeline/'
+      path: '/timeline'
+      fullPath: '/purchase-request/timeline'
+      preLoaderRoute: typeof PurchaseRequestTimelineIndexRouteImport
       parentRoute: typeof PurchaseRequestRouteRoute
     }
     '/purchase-request/team-approvers/': {
@@ -481,6 +501,7 @@ interface PurchaseRequestRouteRouteChildren {
   PurchaseRequestDashboardIndexRoute: typeof PurchaseRequestDashboardIndexRoute
   PurchaseRequestRequestsIndexRoute: typeof PurchaseRequestRequestsIndexRoute
   PurchaseRequestTeamApproversIndexRoute: typeof PurchaseRequestTeamApproversIndexRoute
+  PurchaseRequestTimelineIndexRoute: typeof PurchaseRequestTimelineIndexRoute
   PurchaseRequestUsersIndexRoute: typeof PurchaseRequestUsersIndexRoute
 }
 
@@ -494,6 +515,7 @@ const PurchaseRequestRouteRouteChildren: PurchaseRequestRouteRouteChildren = {
   PurchaseRequestRequestsIndexRoute: PurchaseRequestRequestsIndexRoute,
   PurchaseRequestTeamApproversIndexRoute:
     PurchaseRequestTeamApproversIndexRoute,
+  PurchaseRequestTimelineIndexRoute: PurchaseRequestTimelineIndexRoute,
   PurchaseRequestUsersIndexRoute: PurchaseRequestUsersIndexRoute,
 }
 

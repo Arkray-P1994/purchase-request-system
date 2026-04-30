@@ -14,6 +14,7 @@ import type { ActivityLog } from "./columns";
 import moment from "moment";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { Link } from "@tanstack/react-router";
 
 interface LogViewDrawerProps {
   log: ActivityLog;
@@ -161,7 +162,17 @@ export function LogViewDrawer({ log }: LogViewDrawerProps) {
                     <Tag className="h-3 w-3" /> Ticket ID
                   </span>
                   <span className="text-sm font-mono font-bold text-primary">
-                    {log.request_id?.ticket_id || "N/A"}
+                    {log.request_id?.ticket_id ? (
+                      <Link 
+                        to="/purchase-request/requests" 
+                        search={{ requestId: String(log.request_id.id) }}
+                        className="hover:underline"
+                      >
+                        {log.request_id.ticket_id}
+                      </Link>
+                    ) : (
+                      "N/A"
+                    )}
                   </span>
                 </div>
               </div>

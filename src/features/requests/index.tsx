@@ -8,7 +8,7 @@ import { ModeToggle } from "@/components/toggle";
 import { Button } from "@/components/ui/button";
 import { useDataTableState } from "@/hooks/table-state";
 import { Link, useSearch } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { Columns } from "./components/columns";
 import { ViewRequest } from "./components/view";
 import { CreateRequestPage } from "./create";
@@ -52,14 +52,17 @@ function RequestsList({ search }: { search: any }) {
         </div>
       </Header>
       <Main>
-        <div className="mb-2 flex flex-wrap items-center justify-between space-y-2 gap-x-4">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-primary">
-              Purchase Requests
-            </h2>
-            <p className="text-muted-foreground">
-              Manage and track your procurement requests here.
-            </p>
+        <div className="mb-4 flex flex-wrap items-center justify-between space-y-2 gap-x-4 border-b pb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+               <FileText className="h-6 w-6" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold tracking-tight">Purchase Requests</h2>
+              <p className="text-muted-foreground text-sm">
+                Manage and track your procurement requests here.
+              </p>
+            </div>
           </div>
           <Link to="/purchase-request/requests" search={{ action: "create" }}>
             <Button

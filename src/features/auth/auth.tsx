@@ -10,6 +10,7 @@ export interface User {
   name: string;
   position: string;
   department: string;
+  role: string;
 }
 
 export interface AuthState {
@@ -30,6 +31,7 @@ interface RawUserResponse {
     name: string;
     position: string;
     team_name: string; // Corrected from 'department' to match your JSON
+    role?: string;
     created_at?: string;
   } | null;
   message?: string;
@@ -48,6 +50,7 @@ function toUser(candidate?: RawUserResponse["user"]): User | null {
     position: candidate.position ?? "",
     // Mapping 'team_name' from JSON to 'department' in our App State
     department: candidate.team_name ?? "",
+    role: candidate.role ?? "",
   };
 }
 
@@ -129,37 +132,56 @@ export function useAuth() {
 /** ---------- RequireAuth ---------- */
 interface RequireAuthProps {
   children: React.ReactNode;
-  /** If true, only users with position === 'admin' can enter */
+  /** If true, only users with position === 'admin' or 'superadmin' can enter */
+  adminOnly?: boolean;
+  /** If true, only users with position === 'superadmin' can enter */
   superAdminOnly?: boolean;
 }
 
 export function RequireAuth({
   children,
+  adminOnly = false,
   superAdminOnly = false,
 }: RequireAuthProps) {
   const { isLoading, isAuthenticated, user } = useAuth();
   const router = useRouter();
 
+  const isAuthorized = useMemo(() => {
+    if (!isAuthenticated) return false;
+
+    const pos = user?.position?.toLowerCase();
+    const role = user?.role?.toLowerCase();
+
+    if (superAdminOnly) {
+      return pos === "superadmin" || role === "superadmin";
+    }
+
+    if (adminOnly) {
+      return (
+        pos === "admin" ||
+        pos === "superadmin" ||
+        role === "admin" ||
+        role === "superadmin"
+      );
+    }
+    return true;
+  }, [isAuthenticated, adminOnly, superAdminOnly, user]);
+
   useEffect(() => {
-    // Only attempt navigation after loading is finished
     if (!isLoading) {
       if (!isAuthenticated) {
         router.navigate({ to: "/login" });
-      } else if (superAdminOnly && user?.position !== "superadmin") {
-        // User is logged in but is NOT an admin
-        // Redirect them to a dashboard or a "403 Forbidden" page
+      } else if ((adminOnly || superAdminOnly) && !isAuthorized) {
         router.navigate({ to: "/" });
       }
     }
-  }, [isLoading, isAuthenticated, user, superAdminOnly, router]);
+  }, [isLoading, isAuthenticated, isAuthorized, adminOnly, superAdminOnly, router]);
 
   if (isLoading) {
     return <Spinner />;
   }
 
-  // Guard against rendering children if authentication or role check fails
-  if (!isAuthenticated) return null;
-  if (superAdminOnly && user?.position !== "superadmin") return null;
+  if (!isAuthenticated || ((adminOnly || superAdminOnly) && !isAuthorized)) return null;
 
   return <>{children}</>;
 }

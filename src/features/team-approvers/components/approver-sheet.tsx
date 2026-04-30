@@ -23,7 +23,7 @@ import { toast } from "sonner";
 const approverSchema = z.object({
   team_id: z.string().min(1, "Team is required"),
   user_id: z.string().min(1, "User is required"),
-  approval_level: z.string().min(1, "Approval level is required"),
+  approval_level: z.union([z.string(), z.number()]).refine((val) => val !== "", "Approval level is required"),
 });
 
 type ApproverFormValues = z.infer<typeof approverSchema>;
@@ -31,9 +31,10 @@ type ApproverFormValues = z.infer<typeof approverSchema>;
 interface ApproverSheetProps {
   approver?: any;
   defaultTeamId?: string | number;
+  nextLevel?: number;
 }
 
-export function ApproverSheet({ approver, defaultTeamId }: ApproverSheetProps) {
+export function ApproverSheet({ approver, defaultTeamId, nextLevel }: ApproverSheetProps) {
   const [open, setOpen] = React.useState(false);
   const { data: usersData } = useUsers({ limit: "all" });
   const { teams } = useTeams();
@@ -50,9 +51,15 @@ export function ApproverSheet({ approver, defaultTeamId }: ApproverSheetProps) {
     defaultValues: {
       team_id: getInitialId(approver?.team_id) || defaultTeamId?.toString() || "",
       user_id: getInitialId(approver?.user_id) || "",
-      approval_level: approver?.approval_level?.toString() || "",
+      approval_level: approver?.approval_level?.toString() || nextLevel?.toString() || "",
     },
   });
+
+  React.useEffect(() => {
+    if (open && !approver) {
+      form.setValue("approval_level", nextLevel?.toString() || "");
+    }
+  }, [open, nextLevel, approver, form]);
 
   const isEditing = !!approver;
   const users = usersData?.data || [];
@@ -61,7 +68,7 @@ export function ApproverSheet({ approver, defaultTeamId }: ApproverSheetProps) {
     const payload = {
       team_id: parseInt(values.team_id),
       user_id: parseInt(values.user_id),
-      approval_level: parseInt(values.approval_level),
+      approval_level: typeof values.approval_level === "string" ? parseInt(values.approval_level) : values.approval_level,
     };
 
     if (isEditing) {
@@ -101,14 +108,16 @@ export function ApproverSheet({ approver, defaultTeamId }: ApproverSheetProps) {
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
-            <Field
-              control={form.control}
-              name="team_id"
-              label="Team"
-              variant="select_by_id"
-              selectOptions={teams}
-              readOnly={!!defaultTeamId || isEditing}
-            />
+            {!defaultTeamId && (
+              <Field
+                control={form.control}
+                name="team_id"
+                label="Team"
+                variant="select_by_id"
+                selectOptions={teams}
+                readOnly={isEditing}
+              />
+            )}
             
             <Field
               control={form.control}
@@ -126,6 +135,7 @@ export function ApproverSheet({ approver, defaultTeamId }: ApproverSheetProps) {
               variant="input"
               type="number"
               placeholder="e.g. 1, 2, 3"
+              readOnly={true}
             />
 
             <div className="mt-4">

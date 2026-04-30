@@ -150,7 +150,7 @@ export function TeamApproverDetail({ teamId }: { teamId: string | number }) {
                      <p className="text-xl font-black text-primary">{localApprovers.length}</p>
                    </div>
                  </div>
-                 <ApproverSheet defaultTeamId={teamId} />
+                 <ApproverSheet defaultTeamId={teamId} nextLevel={localApprovers.length + 1} />
                </div>
              )}
           </div>

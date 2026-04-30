@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { LayoutDashboard } from "lucide-react";
 
 const Dashboard = () => {
   const { data, isLoading } = useDashboard();
@@ -38,7 +39,19 @@ const Dashboard = () => {
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <div className="mb-2 flex flex-wrap items-center justify-between space-y-2 gap-x-4 border-b pb-4">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-xl bg-primary/10 text-primary">
+             <LayoutDashboard className="h-6 w-6" />
+          </div>
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight">System Dashboard</h2>
+            <p className="text-muted-foreground text-sm">
+              Overview of purchase request statistics and recent activity.
+            </p>
+          </div>
+        </div>
+      </div>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

@@ -19,12 +19,11 @@ export function AppSidebar() {
   const filteredNavGroups = sidebarData.navGroups.map((group) => ({
     ...group,
     items: group.items.filter((item) => {
-      // 1. If it's the "Users" item...
-      if (item.title === "Users") {
-        // 2. ONLY show it if the user position is "admin" or "superadmin"
-        return user?.user?.position === "superadmin" || user?.user?.position === "admin" || user?.user?.role === "admin";
+      if (item.adminOnly) {
+        const pos = user?.user?.position?.toLowerCase();
+        const role = user?.user?.role?.toLowerCase();
+        return pos === "admin" || pos === "superadmin" || role === "admin" || role === "superadmin";
       }
-      // 3. Show all other items normally
       return true;
     }),
   }));

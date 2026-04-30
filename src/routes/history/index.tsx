@@ -19,7 +19,7 @@ export const Route = createFileRoute("/history/")({
 function HistoryLayout() {
   return (
     <AuthProvider>
-      <RequireAuth>
+      <RequireAuth adminOnly={true}>
         <MainLayout>
           <ActivityLogsPage />
         </MainLayout>

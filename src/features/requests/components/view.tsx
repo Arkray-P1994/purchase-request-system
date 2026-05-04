@@ -4,6 +4,7 @@ import { ConfigDrawer } from "@/components/layout/config-drawer";
 import { Header } from "@/components/layout/header";
 import { Main } from "@/components/main";
 import { ModeToggle } from "@/components/toggle";
+import { baseUrl } from "@/lib/base-url";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -29,6 +30,8 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
+  Eye,
+  Download,
 } from "lucide-react";
 import moment from "moment";
 import { useSearch, Link, useNavigate } from "@tanstack/react-router";
@@ -54,8 +57,16 @@ export function ViewRequest() {
   }) as any;
   const { user } = useUser();
   const [openDelete, setOpenDelete] = useState(false);
+  const [selectedAttachment, setSelectedAttachment] = useState<string | null>(
+    null,
+  );
+  const [attachmentType, setAttachmentType] = useState<"image" | "pdf" | null>(
+    null,
+  );
   const { data: request, isLoading } = useRequest({ id: requestId });
-  const { trigger: deleteReq, isMutating: isDeleting } = useDeleteRequest(String(requestId));
+  const { trigger: deleteReq, isMutating: isDeleting } = useDeleteRequest(
+    String(requestId),
+  );
 
   if (isLoading) {
     return <Spinner />;
@@ -111,9 +122,9 @@ export function ViewRequest() {
                       Edit Request
                     </Button>
                   </Link>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     onClick={() => setOpenDelete(true)}
                   >
@@ -129,8 +140,12 @@ export function ViewRequest() {
                         </div>
                         <DialogTitle>Confirm Deletion</DialogTitle>
                         <DialogDescription className="text-sm">
-                          Are you sure you want to delete request <span className="font-bold text-foreground">#{request.ticket_id}</span>? 
-                          This action is permanent and will soft-delete all associated items and attachments.
+                          Are you sure you want to delete request{" "}
+                          <span className="font-bold text-foreground">
+                            #{request.ticket_id}
+                          </span>
+                          ? This action is permanent and will soft-delete all
+                          associated items and attachments.
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter className="gap-2 sm:gap-0">
@@ -432,83 +447,103 @@ export function ViewRequest() {
                     </div>
                     <CheckCircle2 className="h-8 w-8 opacity-20" />
                   </div>
-                  {request.status_id?.name === "Released" && request.released_at && (
-                    <>
-                      <div className="h-px bg-primary-foreground/20" />
-                      <div className="space-y-4 pt-2">
-                        <div className="space-y-1.5">
-                          <p className="text-[10px] font-bold uppercase opacity-60">
-                            Released At
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <CheckCircle2 className="h-4 w-4 opacity-80" />
-                            <span className="text-sm font-bold tracking-tight">
-                              {moment(request.released_at).format("MMMM DD, YYYY · h:mm A")}
-                            </span>
+                  {request.status_id?.name === "Released" &&
+                    request.released_at && (
+                      <>
+                        <div className="h-px bg-primary-foreground/20" />
+                        <div className="space-y-4 pt-2">
+                          <div className="space-y-1.5">
+                            <p className="text-[10px] font-bold uppercase opacity-60">
+                              Released At
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 className="h-4 w-4 opacity-80" />
+                              <span className="text-sm font-bold tracking-tight">
+                                {moment(request.released_at).format(
+                                  "MMMM DD, YYYY · h:mm A",
+                                )}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <p className="text-[10px] font-bold uppercase opacity-60">
+                              Released By
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 opacity-80" />
+                              <span className="text-sm font-bold tracking-tight">
+                                {request.releasor?.name || "N/A"}
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <div className="space-y-1.5">
-                          <p className="text-[10px] font-bold uppercase opacity-60">
-                            Released By
-                          </p>
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 opacity-80" />
-                            <span className="text-sm font-bold tracking-tight">
-                              {request.releasor?.name || "N/A"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                      </>
+                    )}
                 </CardContent>
               </Card>
 
               {/* Approval Workflow */}
               {request.status_id?.name !== "Draft" && (
                 <Card className="border border-border/50 shadow-none bg-card flex flex-col">
-                <CardHeader className="pb-5">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                      {!(request.status_id?.name === "Approved" || request.status_id?.name === "Rejected" || request.status_id?.name === "Disapproved") ? "Approval Workflow" : "Approval History"}
-                    </CardTitle>
-                    <span className="text-[10px] tracking-wider text-muted-foreground/60">
-                      {!(request.status_id?.name === "Approved" || request.status_id?.name === "Rejected" || request.status_id?.name === "Disapproved") ? (
-                        <>
-                          {request.current_level}/
-                          {
-                            (Array.isArray(request.workflow)
-                              ? request.workflow
-                              : Object.values(request.workflow || {}).filter(
-                                  (w: any) =>
-                                    w &&
-                                    typeof w === "object" &&
-                                    "approval_level" in w &&
-                                    !w.deleted_at,
-                                )
-                            ).length
-                          }
-                        </>
-                      ) : (
-                        <>{request.request_approvals?.length || 0} Steps</>
-                      )}
-                    </span>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-2">
-                    {!(request.status_id?.name === "Approved" || request.status_id?.name === "Rejected" || request.status_id?.name === "Disapproved") ? (
+                  <CardHeader className="pb-5">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+                        {!(
+                          request.status_id?.name === "Approved" ||
+                          request.status_id?.name === "Rejected" ||
+                          request.status_id?.name === "Disapproved"
+                        )
+                          ? "Approval Workflow"
+                          : "Approval History"}
+                      </CardTitle>
+                      <span className="text-[10px] tracking-wider text-muted-foreground/60">
+                        {!(
+                          request.status_id?.name === "Approved" ||
+                          request.status_id?.name === "Rejected" ||
+                          request.status_id?.name === "Disapproved"
+                        ) ? (
+                          <>
+                            {request.current_level}/
+                            {
+                              (Array.isArray(request.workflow)
+                                ? request.workflow
+                                : Object.values(request.workflow || {}).filter(
+                                    (w: any) =>
+                                      w &&
+                                      typeof w === "object" &&
+                                      "approval_level" in w &&
+                                      !w.deleted_at,
+                                  )
+                              ).length
+                            }
+                          </>
+                        ) : (
+                          <>{request.request_approvals?.length || 0} Steps</>
+                        )}
+                      </span>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="pt-2">
+                    {!(
+                      request.status_id?.name === "Approved" ||
+                      request.status_id?.name === "Rejected" ||
+                      request.status_id?.name === "Disapproved"
+                    ) ? (
                       <div className="relative">
                         {(Array.isArray(request.workflow)
                           ? request.workflow
                           : Object.values(request.workflow || {}).filter(
                               (w: any) =>
-                                w && typeof w === "object" && "approval_level" in w,
+                                w &&
+                                typeof w === "object" &&
+                                "approval_level" in w,
                             )
                         )
                           .filter((w: any) => !w.deleted_at)
                           .sort(
                             (a: any, b: any) =>
-                              Number(a.approval_level) - Number(b.approval_level),
+                              Number(a.approval_level) -
+                              Number(b.approval_level),
                           )
                           .map((step: any, index: number, arr: any[]) => {
                             const approval = request.request_approvals?.find(
@@ -626,12 +661,15 @@ export function ViewRequest() {
                               approval.status === "Rejected" ||
                               approval.status === "Disapproved";
 
-                            let dotClass = "bg-emerald-500 border-emerald-500 ring-4 ring-emerald-500/20";
-                            let labelClass = "text-emerald-600 dark:text-emerald-400 font-bold";
+                            let dotClass =
+                              "bg-emerald-500 border-emerald-500 ring-4 ring-emerald-500/20";
+                            let labelClass =
+                              "text-emerald-600 dark:text-emerald-400 font-bold";
                             let label = "Approved";
 
                             if (isRejected) {
-                              dotClass = "bg-destructive border-destructive ring-4 ring-destructive/10";
+                              dotClass =
+                                "bg-destructive border-destructive ring-4 ring-destructive/10";
                               labelClass = "text-destructive font-bold";
                               label = "Declined";
                             }
@@ -658,7 +696,9 @@ export function ViewRequest() {
                                       L{approval.level}
                                     </span>
                                   </div>
-                                  <p className={`text-[10px] mt-0.5 uppercase tracking-[0.15em] ${labelClass}`}>
+                                  <p
+                                    className={`text-[10px] mt-0.5 uppercase tracking-[0.15em] ${labelClass}`}
+                                  >
                                     {label}
                                   </p>
                                   <div className="mt-3 space-y-1.5">
@@ -679,11 +719,11 @@ export function ViewRequest() {
                           })}
                       </div>
                     )}
-                </CardContent>
-              </Card>
-            )}
+                  </CardContent>
+                </Card>
+              )}
 
-            <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
+              <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
                 <CardHeader className="pb-3 border-b border-muted/20">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg font-bold flex items-center gap-2">
@@ -701,27 +741,65 @@ export function ViewRequest() {
                 <CardContent className="pt-6">
                   {request.attachments && request.attachments.length > 0 ? (
                     <div className="space-y-3">
-                      {request.attachments.map((file: any, index: number) => (
-                        <a
-                          key={index}
-                          href={file.file_path}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 rounded-xl bg-background border border-muted shadow-sm hover:border-primary/50 hover:shadow-md transition-all group"
-                        >
-                          <div className="p-2 bg-muted rounded-lg group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                            <FileText className="h-4 w-4" />
+                      {request.attachments.map((file: any, index: number) => {
+                        const fileUrl = `${baseUrl}/${file.file_path?.replace(/^[\/\\]/, "")}`;
+                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(
+                          file.file_name,
+                        );
+                        const isPdf = /\.pdf$/i.test(file.file_name);
+                        const isViewable = isImage || isPdf;
+
+                        return (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between gap-3 p-3 rounded-xl bg-background border border-muted shadow-sm hover:border-primary/50 hover:shadow-md transition-all group"
+                          >
+                            <div className="flex items-center gap-3 min-w-0 flex-1">
+                              <div className="p-2 bg-muted rounded-lg group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                <FileText className="h-4 w-4" />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-bold truncate pr-2">
+                                  {file.file_name}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 shrink-0">
+                              {isViewable && (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  className="h-8 text-xs bg-primary/10 hover:bg-primary/20 text-primary"
+                                  onClick={() => {
+                                    setSelectedAttachment(fileUrl);
+                                    setAttachmentType(
+                                      isImage ? "image" : "pdf",
+                                    );
+                                  }}
+                                >
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  View
+                                </Button>
+                              )}
+                              <a
+                                href={fileUrl}
+                                download={file.file_name}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 text-xs"
+                                >
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Download
+                                </Button>
+                              </a>
+                            </div>
                           </div>
-                          <div className="flex flex-col min-w-0">
-                            <span className="text-xs font-bold truncate pr-2">
-                              {file.file_name}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground font-medium uppercase">
-                              Download File
-                            </span>
-                          </div>
-                        </a>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="text-center py-8 border-2 border-dashed rounded-xl border-muted">
@@ -736,6 +814,36 @@ export function ViewRequest() {
             </div>
           </div>
         </div>
+
+        {/* Attachment Viewer Modal */}
+        <Dialog
+          open={!!selectedAttachment}
+          onOpenChange={(open) => !open && setSelectedAttachment(null)}
+        >
+          <DialogContent className="max-w-5xl w-[95vw] h-[90vh] p-0 flex flex-col overflow-hidden bg-background/95 backdrop-blur-md border-muted">
+            <DialogHeader className="p-4 border-b bg-muted/10 shrink-0">
+              <DialogTitle className="text-sm font-bold flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                Attachment Viewer
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-auto bg-black/5 flex items-center justify-center p-4">
+              {attachmentType === "image" ? (
+                <img
+                  src={selectedAttachment || ""}
+                  alt="Attachment"
+                  className="max-w-full max-h-full object-contain shadow-md rounded-lg"
+                />
+              ) : attachmentType === "pdf" ? (
+                <iframe
+                  src={selectedAttachment || ""}
+                  className="w-full h-full border-0 bg-white rounded-lg shadow-md"
+                  title="PDF Viewer"
+                />
+              ) : null}
+            </div>
+          </DialogContent>
+        </Dialog>
       </Main>
     </div>
   );

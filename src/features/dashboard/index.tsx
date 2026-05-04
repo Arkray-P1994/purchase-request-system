@@ -1,147 +1,194 @@
 import { useDashboard } from "@/api/fetch-dashboard";
+import { Header } from "@/components/layout/header";
+import { Main } from "@/components/main";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import Spinner from "@/components/ui/spinner";
+import {
+  CheckCircle2,
+  Clock,
+  FileText,
+  History,
+  Hourglass,
+  Package,
+  XCircle,
+} from "lucide-react";
+import { RequestDistribution } from "./charts/request-distribution";
+import { StatusDistribution } from "./charts/status-distribution";
+import { TeamDistribution } from "./charts/team-distribution";
+import { CostCenterExpenditure } from "./charts/cost-center-expenditure";
 import { format } from "date-fns";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { LayoutDashboard } from "lucide-react";
 
-const Dashboard = () => {
+export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-6 p-6">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Skeleton className="h-[120px] w-full" />
-          <Skeleton className="h-[120px] w-full" />
-          <Skeleton className="h-[120px] w-full" />
-          <Skeleton className="h-[120px] w-full" />
-        </div>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Skeleton className="h-[400px] w-full col-span-4" />
-          <Skeleton className="h-[400px] w-full col-span-3" />
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <Spinner />;
 
   const stats = data.statistics;
-  const recent = data.recent_requests;
+  const kpis = data.kpis;
+  const recentRequests = data.recent_requests;
 
-  const chartData = [
-    { name: "Pending", count: stats.Pending || 0 },
-    { name: "Approved", count: stats.Approved || 0 },
-    { name: "Disapproved", count: stats.Disapproved || 0 },
-    { name: "For Cash Release", count: stats["For Cash Release"] || 0 },
-    { name: "Cash Released", count: stats["Cash Released"] || 0 },
-  ];
+  const total = stats.Total ?? 0;
+  const pending = stats.Pending ?? 0;
+  const approved = stats.Approved ?? 0;
+  const disapproved = stats.Disapproved ?? 0;
+  const draft = stats.Draft ?? 0;
 
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="mb-2 flex flex-wrap items-center justify-between space-y-2 gap-x-4 border-b pb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-primary/10 text-primary">
-             <LayoutDashboard className="h-6 w-6" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight">System Dashboard</h2>
-            <p className="text-muted-foreground text-sm">
-              Overview of purchase request statistics and recent activity.
-            </p>
-          </div>
+    <>
+      <Header fixed />
+      <Main>
+        <div className="mb-2 flex items-center justify-between space-y-2">
+          <h1 className="text-2xl font-bold tracking-tight">
+            Purchase Request Dashboard
+          </h1>
         </div>
-      </div>
-      
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.Total || 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.Pending || 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.Approved || 0}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Released</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats["Cash Released"] || 0}</div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-4">
-          <CardHeader>
-            <CardTitle>Request Status Distribution</CardTitle>
-          </CardHeader>
-          <CardContent className="pl-2">
-            <div className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                  <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-                  <Tooltip cursor={{ fill: "var(--muted)" }} contentStyle={{ borderRadius: '8px', border: '1px solid var(--border)', backgroundColor: 'var(--background)' }} />
-                  <Bar dataKey="count" fill="currentColor" className="fill-primary" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{total.toLocaleString()}</div>
+            </CardContent>
+          </Card>
 
-        <Card className="col-span-3">
-          <CardHeader>
-            <CardTitle>Recent Requests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Ticket ID</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recent.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center h-24">No recent requests.</TableCell>
-                  </TableRow>
-                ) : (
-                  recent.map((req) => (
-                    <TableRow key={req.id}>
-                      <TableCell className="font-medium">{req.ticket_id}</TableCell>
-                      <TableCell>{req.status_name}</TableCell>
-                      <TableCell>{format(new Date(req.created_at), "MMM d, yyyy")}</TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending</CardTitle>
+              <Hourglass className="h-4 w-4 text-amber-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{pending.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Approved</CardTitle>
+              <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{approved.toLocaleString()}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Disapproved</CardTitle>
+              <XCircle className="h-4 w-4 text-red-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {disapproved.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg. Approval Time</CardTitle>
+              <Clock className="h-4 w-4 text-blue-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{kpis.average_approval_time}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-6">
+          <RequestDistribution data={data.request_distribution} />
+          <StatusDistribution data={data.statistics} />
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-6">
+          <TeamDistribution data={data.team_distribution} />
+          <CostCenterExpenditure data={data.expenditure_by_cost_center} />
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <History className="h-5 w-5" />
+                Recent Requests
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="relative w-full overflow-auto">
+                <table className="w-full caption-bottom text-sm">
+                  <thead className="[&_tr]:border-b">
+                    <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Ticket ID
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Requestor
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Status
+                      </th>
+                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        Date
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="[&_tr:last-child]:border-0">
+                    {recentRequests.length > 0 ? (
+                      recentRequests.map((req) => (
+                        <tr
+                          key={req.id}
+                          className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
+                        >
+                          <td className="p-4 align-middle font-medium">
+                            {req.ticket_id}
+                          </td>
+                          <td className="p-4 align-middle">{req.requestor_name}</td>
+                          <td className="p-4 align-middle">
+                            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
+                              {req.status_name}
+                            </span>
+                          </td>
+                          <td className="p-4 align-middle text-muted-foreground">
+                            {format(new Date(req.created_at), "MMM dd, yyyy")}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td
+                          colSpan={4}
+                          className="h-24 text-center align-middle text-muted-foreground"
+                        >
+                          No recent requests found.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Drafts
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center justify-center py-10 text-center">
+              <div className="text-4xl font-bold text-muted-foreground/30">
+                {draft}
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                You have {draft} request{draft !== 1 ? "s" : ""} saved as draft.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </Main>
+    </>
   );
-};
-
-export default Dashboard;
+}

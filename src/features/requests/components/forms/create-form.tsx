@@ -31,11 +31,28 @@ export function CreateRequestForm() {
   const hasMultipleTeams = teams.length > 1;
 
   const costCenterOptions = budgetEntries
-    ? budgetEntries.map((b: any) => ({
-        name: `${b.unq_code} - ${b.name}`,
-        fy_start: b.fy_start,
-        fy_end: b.fy_end,
-      }))
+    ? budgetEntries
+        .filter((b: any) => {
+          if (!user?.user?.teams) return false;
+          const isAdmin =
+            user?.user?.role?.toLowerCase() === "admin" ||
+            user?.user?.position?.toLowerCase() === "superadmin";
+          if (isAdmin) return true;
+
+          return user.user.teams.some(
+            (team: any) => {
+              const codeMatch = String(team.unq_code) === String(b.unq_code);
+              const nameMatch = b.name.toLowerCase().includes(team.name.toLowerCase()) || 
+                                team.name.toLowerCase().includes(b.name.toLowerCase());
+              return codeMatch || nameMatch;
+            }
+          );
+        })
+        .map((b: any) => ({
+          name: `${b.unq_code} - ${b.name}`,
+          fy_start: b.fy_start,
+          fy_end: b.fy_end,
+        }))
     : [];
 
   const now = new Date();

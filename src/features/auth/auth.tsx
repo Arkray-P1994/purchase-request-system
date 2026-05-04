@@ -4,6 +4,12 @@ import Spinner from "@/components/ui/spinner";
 import React, { createContext, useContext, useEffect, useMemo } from "react";
 
 /** ---------- Types ---------- */
+export interface Team {
+  id: string | number;
+  name: string;
+  unq_code: string;
+}
+
 export interface User {
   id: string;
   username: string;
@@ -11,6 +17,7 @@ export interface User {
   position: string;
   department: string;
   role: string;
+  teams?: Team[];
 }
 
 export interface AuthState {
@@ -33,6 +40,11 @@ interface RawUserResponse {
     team_name: string; // Corrected from 'department' to match your JSON
     role?: string;
     created_at?: string;
+    teams?: {
+      id: string | number;
+      name: string;
+      unq_code: string;
+    }[];
   } | null;
   message?: string;
 }
@@ -51,6 +63,7 @@ function toUser(candidate?: RawUserResponse["user"]): User | null {
     // Mapping 'team_name' from JSON to 'department' in our App State
     department: candidate.team_name ?? "",
     role: candidate.role ?? "",
+    teams: candidate.teams,
   };
 }
 

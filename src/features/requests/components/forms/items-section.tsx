@@ -32,10 +32,10 @@ export function ItemsSection() {
   );
 
   const budgetCodeOptions =
-    selectedEntry?.budgetEntries?.map((item: any) => ({
+    selectedEntry?.budget_entries?.map((item: any) => ({
       id: item.id,
       name: `${item.account_code} - ${item.item_name}`,
-      balance: Number(item.budget_base || 0),
+      balance: Number(item.remaining || 0),
     })) || [];
 
   const totalAmount =
@@ -46,11 +46,20 @@ export function ItemsSection() {
     );
 
   useEffect(() => {
+    // Calculate aggregate totals per budget code
+    const aggregateTotals: Record<string, number> = {};
+    items.forEach((item: any) => {
+      if (item.budget_code) {
+        const itemTotal = (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
+        aggregateTotals[item.budget_code] = (aggregateTotals[item.budget_code] || 0) + itemTotal;
+      }
+    });
+
     items.forEach((item: any, index: number) => {
       const option = budgetCodeOptions.find((opt: any) => opt.name === item.budget_code);
       if (option) {
-        const itemTotal = (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
-        if (itemTotal > option.balance) {
+        const totalForThisBudget = aggregateTotals[item.budget_code];
+        if (totalForThisBudget > option.balance) {
           setError(`items.${index}.unit_price` as any, {
             type: "manual",
             message: "Insufficient budget",
@@ -118,7 +127,16 @@ export function ItemsSection() {
                 {fields.map((field, index) => {
                   const item = items[index];
                   const selectedBudget = budgetCodeOptions.find((opt: any) => opt.name === item?.budget_code);
-                  const isOverBudget = selectedBudget && ((Number(item?.quantity) || 0) * (Number(item?.unit_price) || 0)) > selectedBudget.balance;
+                  
+                  // Calculate aggregate total for this item's budget code
+                  const totalForThisBudget = items.reduce((sum: number, it: any) => {
+                    if (it.budget_code && it.budget_code === item?.budget_code) {
+                      return sum + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
+                    }
+                    return sum;
+                  }, 0);
+
+                  const isOverBudget = selectedBudget && totalForThisBudget > selectedBudget.balance;
 
                   return (
                     <ItemTableRow
@@ -146,7 +164,16 @@ export function ItemsSection() {
           {fields.map((field, index) => {
             const item = items[index];
             const selectedBudget = budgetCodeOptions.find((opt: any) => opt.name === item?.budget_code);
-            const isOverBudget = selectedBudget && ((Number(item?.quantity) || 0) * (Number(item?.unit_price) || 0)) > selectedBudget.balance;
+            
+            // Calculate aggregate total for this item's budget code
+            const totalForThisBudget = items.reduce((sum: number, it: any) => {
+              if (it.budget_code && it.budget_code === item?.budget_code) {
+                return sum + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
+              }
+              return sum;
+            }, 0);
+
+            const isOverBudget = selectedBudget && totalForThisBudget > selectedBudget.balance;
 
             return (
               <ItemMobileCard

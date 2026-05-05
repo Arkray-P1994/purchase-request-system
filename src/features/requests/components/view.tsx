@@ -126,7 +126,9 @@ export function ViewRequest() {
             </Button>
             <div className="flex items-center gap-2">
               {request && <ApprovalActions request={request} />}
-              {["Pending", "Draft"].includes(request.status_id?.name || "") && (
+              {request && (user?.user?.role?.toLowerCase() === "admin" 
+                ? !["For Cash Release", "Cash Released", "Approved", "Disapproved", "Rejected"].includes(request.status_id?.name || "")
+                : ["Pending", "Draft"].includes(request.status_id?.name || "")) && (
                 <>
                   <Link
                     to="/purchase-request/requests/$requestId/edit"

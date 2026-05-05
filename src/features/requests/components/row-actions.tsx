@@ -33,10 +33,11 @@ export function DataTableRowActions({
   const [openDelete, setOpenDelete] = useState(false);
   const { trigger: deleteReq, isMutating: isDeleting } = useDeleteRequest(String(row.original.id));
 
-  const isAdmin = user?.user?.role === "admin";
+  const isAdmin = user?.user?.role?.toLowerCase() === "admin";
   const isCreator = String(user?.user?.id) === String(row.original.user_id?.id);
-  const canEdit = isAdmin || isCreator;
-  const isEditable = ["Pending", "Draft"].includes(row.original.status_id?.name || "");
+  const statusName = row.original.status_id?.name || "";
+  const isFinalized = ["For Cash Release", "Cash Released", "Approved", "Disapproved", "Rejected"].includes(statusName);
+  const canModify = isAdmin ? !isFinalized : ["Pending", "Draft"].includes(statusName) && isCreator;
 
   return (
     <div className="flex gap-1 items-center justify-end">
@@ -61,7 +62,7 @@ export function DataTableRowActions({
           </TooltipContent>
         </Tooltip>
         
-        {isEditable && canEdit && (
+        {canModify && (
           <>
             <Tooltip>
               <TooltipTrigger asChild>

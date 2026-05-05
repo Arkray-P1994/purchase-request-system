@@ -25,22 +25,40 @@ export function EditRequestPage() {
     );
   }
 
-  const isAdmin = user?.user?.role === "admin";
+  const isAdmin = user?.user?.role?.toLowerCase() === "admin";
   const isCreator = String(user?.user?.id) === String(request?.user_id?.id);
-  const canEdit = isAdmin || isCreator;
+  const statusName = request.status_id?.name || "";
+  
+  // Normal users can only edit Pending or Draft
+  const isEditableForUser = ["Pending", "Draft"].includes(statusName);
+  
+  // Admins can edit almost anything, EXCEPT finalized accounting/approval states
+  const isFinalized = ["For Cash Release", "Cash Released", "Approved", "Disapproved", "Rejected"].includes(statusName);
+  const canAdminEdit = isAdmin && !isFinalized;
 
-  if (!["Pending", "Draft"].includes(request.status_id?.name || "")) {
+  if (isFinalized && isAdmin) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-        <h2 className="text-2xl font-bold">Editing Forbidden</h2>
+        <h2 className="text-2xl font-bold">Editing Locked</h2>
         <p className="text-muted-foreground text-center">
-          Only requests with <span className="font-bold text-orange-500">Pending</span> or <span className="font-bold text-slate-500">Draft</span> status can be edited.
+          Even as an Admin, you cannot edit requests that are already <span className="font-bold text-primary">{statusName}</span>.
         </p>
       </div>
     );
   }
 
-  if (!canEdit) {
+  if (!canAdminEdit && !isEditableForUser) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <h2 className="text-2xl font-bold">Editing Forbidden</h2>
+        <p className="text-muted-foreground text-center">
+          This request is in <span className="font-bold text-orange-500">{statusName}</span> status and cannot be modified.
+        </p>
+      </div>
+    );
+  }
+
+  if (!isAdmin && !isCreator) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
         <h2 className="text-2xl font-bold text-destructive">Unauthorized Access</h2>

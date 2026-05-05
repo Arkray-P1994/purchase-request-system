@@ -5,11 +5,11 @@ import { ConfigDrawer } from "@/components/layout/config-drawer";
 import { EditRequestForm } from "../components/forms/edit-form";
 import { useRequest } from "@/api/fetch-request";
 import { useUser } from "@/api/fetch-user";
-import { useSearch } from "@tanstack/react-router";
+import { useParams } from "@tanstack/react-router";
 import Spinner from "@/components/ui/spinner";
 
 export function EditRequestPage() {
-  const { requestId } = useSearch({ from: "/purchase-request/requests/" }) as any;
+  const { requestId } = useParams({ strict: false }) as any;
   const { data: request, isLoading } = useRequest({ id: requestId });
   const { user } = useUser();
 

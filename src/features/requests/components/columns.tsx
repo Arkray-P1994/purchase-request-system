@@ -27,8 +27,8 @@ export const Columns: ColumnDef<Request>[] = [
     ),
     cell: ({ row }) => (
       <Link
-        to="/purchase-request/requests"
-        search={{ requestId: String(row.original.id) }}
+        to="/purchase-request/requests/$requestId"
+        params={{ requestId: String(row.original.id) }}
         className="truncate font-bold text-primary hover:underline underline-offset-4 text-xs"
       >
         {row.getValue("ticket_id")}

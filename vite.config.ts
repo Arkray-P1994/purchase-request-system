@@ -20,7 +20,13 @@ export default defineConfig({
     },
   },
   server: {
-    host: "0.0.0.0", // This makes it accessible on all network interfaces
+    host: "0.0.0.0",
     port: 5173,
+    proxy: {
+      "/purchase-request-api": {
+        target: "http://localhost",
+        changeOrigin: true,
+      },
+    },
   },
 });

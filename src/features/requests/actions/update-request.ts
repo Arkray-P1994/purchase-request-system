@@ -49,8 +49,8 @@ export function useUpdateRequest(id: string | number) {
       onSuccess: () => {
         mutate((key) => typeof key === "string" && key.includes(`${baseUrl}/request`));
         navigate({
-          to: `/purchase-request/requests`,
-          search: { requestId: String(id) },
+          to: `/purchase-request/requests/$requestId`,
+          params: { requestId: String(id) },
         });
         showSuccessToast("Request updated successfully");
       },

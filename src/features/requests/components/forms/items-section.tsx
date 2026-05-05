@@ -15,7 +15,7 @@ import { ItemTableRow } from "./item-table-row";
 import { ItemMobileCard } from "./item-mobile-card";
 
 export function ItemsSection() {
-  const { control, watch, setValue, setError, clearErrors } = useFormContext<CreateRequestValues>();
+  const { control, watch, setValue, setError, clearErrors, formState: { errors } } = useFormContext<CreateRequestValues>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "items",
@@ -56,11 +56,14 @@ export function ItemsSection() {
             message: "Insufficient budget",
           });
         } else {
-          clearErrors(`items.${index}.unit_price` as any);
+          const fieldError = errors?.items?.[index]?.unit_price;
+          if (fieldError?.type === "manual") {
+            clearErrors(`items.${index}.unit_price` as any);
+          }
         }
       }
     });
-  }, [items, budgetCodeOptions, setError, clearErrors]);
+  }, [items, budgetCodeOptions, setError, clearErrors, errors]);
 
   return (
     <div className="space-y-6 w-full min-w-0">

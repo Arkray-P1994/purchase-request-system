@@ -164,8 +164,8 @@ export function LogViewDrawer({ log }: LogViewDrawerProps) {
                   <span className="text-sm font-mono font-bold text-primary">
                     {log.request_id?.ticket_id ? (
                       <Link 
-                        to="/purchase-request/requests" 
-                        search={{ requestId: String(log.request_id.id) }}
+                        to="/purchase-request/requests/$requestId" 
+                        params={{ requestId: String(log.request_id.id) }}
                         className="hover:underline"
                       >
                         {log.request_id.ticket_id}

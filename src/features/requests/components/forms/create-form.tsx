@@ -22,6 +22,7 @@ import {
 import { useBudgetEntries } from "@/api/fetch-budget";
 
 import { Paperclip, X, FileIcon, UploadCloud } from "lucide-react";
+import moment from "moment";
 
 export function CreateRequestForm() {
   const { user } = useUser();
@@ -104,7 +105,7 @@ export function CreateRequestForm() {
     if (values.desired_delivery_date) {
       formData.append(
         "desired_delivery_date",
-        values.desired_delivery_date.toISOString().split("T")[0],
+        moment(values.desired_delivery_date).format("YYYY-MM-DD"),
       );
     }
 
@@ -117,8 +118,8 @@ export function CreateRequestForm() {
     formData.append("payee", values.payee);
     formData.append("charge_to", values.charge_to);
     formData.append("management_number", values.management_number);
-    formData.append("fy_start", values.fy_start ? values.fy_start.toISOString().split("T")[0] : "");
-    formData.append("fy_end", values.fy_end ? values.fy_end.toISOString().split("T")[0] : "");
+    formData.append("fy_start", values.fy_start ? moment(values.fy_start).format("YYYY-MM-DD") : "");
+    formData.append("fy_end", values.fy_end ? moment(values.fy_end).format("YYYY-MM-DD") : "");
     formData.append("status_id", isDraft ? "7" : "1");
 
     // Append items as JSON string (standard approach for nested data in multipart)

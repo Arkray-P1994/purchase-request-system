@@ -45,8 +45,8 @@ export function DataTableRowActions({
         <Tooltip>
           <TooltipTrigger asChild>
             <Link
-              to="/purchase-request/requests"
-              search={{ requestId: String(row.original.id) }}
+              to="/purchase-request/requests/$requestId"
+              params={{ requestId: String(row.original.id) }}
             >
               <Button
                 variant="ghost"
@@ -66,8 +66,8 @@ export function DataTableRowActions({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Link
-                  to="/purchase-request/requests"
-                  search={{ requestId: String(row.original.id), action: "edit" }}
+                  to="/purchase-request/requests/$requestId/edit"
+                  params={{ requestId: String(row.original.id) }}
                 >
                   <Button
                     variant="ghost"

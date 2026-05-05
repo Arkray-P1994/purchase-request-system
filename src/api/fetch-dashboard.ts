@@ -46,6 +46,7 @@ export interface DashboardData {
   request_distribution: RequestDistribution;
   expenditure_by_cost_center: ExpenditureByCostCenter[];
   team_distribution: TeamDistribution[];
+  draft_requests: RecentRequest[];
   kpis: DashboardKPIs;
 }
 
@@ -66,6 +67,7 @@ export function useDashboard() {
       request_distribution: { seven_days: [], thirty_days: [], yearly: [] },
       expenditure_by_cost_center: [],
       team_distribution: [],
+      draft_requests: [],
       kpis: { average_approval_time: "N/A" },
     },
     error,

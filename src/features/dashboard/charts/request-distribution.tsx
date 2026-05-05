@@ -41,7 +41,7 @@ interface RequestDistributionProps {
 const chartConfig = {
   requests: {
     label: "Requests",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
 

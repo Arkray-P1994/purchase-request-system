@@ -34,7 +34,7 @@ import {
   Download,
 } from "lucide-react";
 import moment from "moment";
-import { useSearch, Link, useNavigate } from "@tanstack/react-router";
+import { useParams, Link, useNavigate } from "@tanstack/react-router";
 import { ApprovalActions } from "./approval-actions";
 import { StatusBadge } from "./status-badge";
 import Spinner from "@/components/ui/spinner";
@@ -50,11 +50,26 @@ import {
 } from "@/components/ui/dialog";
 import { Trash2, AlertTriangle } from "lucide-react";
 
+async function forceDownload(url: string, filename: string) {
+  try {
+    const response = await fetch(url, {
+      credentials: "include",
+    });
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error("Download failed:", error);
+  }
+}
+
 export function ViewRequest() {
   const navigate = useNavigate();
-  const { requestId } = useSearch({
-    from: "/purchase-request/requests/",
-  }) as any;
+  const { requestId } = useParams({ strict: false }) as any;
   const { user } = useUser();
   const [openDelete, setOpenDelete] = useState(false);
   const [selectedAttachment, setSelectedAttachment] = useState<string | null>(
@@ -114,8 +129,8 @@ export function ViewRequest() {
               {["Pending", "Draft"].includes(request.status_id?.name || "") && (
                 <>
                   <Link
-                    to="/purchase-request/requests"
-                    search={{ requestId: String(requestId), action: "edit" }}
+                    to="/purchase-request/requests/$requestId/edit"
+                    params={{ requestId: String(requestId) }}
                   >
                     <Button variant="outline" size="sm">
                       <FileText className="mr-2 h-4 w-4" />
@@ -351,7 +366,6 @@ export function ViewRequest() {
                               {item.budget_code || "N/A"}
                             </code>
                           </TableCell>
-
                           <TableCell className="border-r">
                             <span
                               className="text-xs font-medium text-muted-foreground line-clamp-2"
@@ -723,6 +737,7 @@ export function ViewRequest() {
                 </Card>
               )}
 
+              {/* Attachments */}
               <Card className="border-none shadow-sm bg-card/60 backdrop-blur-sm">
                 <CardHeader className="pb-3 border-b border-muted/20">
                   <div className="flex items-center justify-between">
@@ -781,21 +796,17 @@ export function ViewRequest() {
                                   View
                                 </Button>
                               )}
-                              <a
-                                href={fileUrl}
-                                download={file.file_name}
-                                target="_blank"
-                                rel="noopener noreferrer"
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs"
+                                onClick={() =>
+                                  forceDownload(fileUrl, file.file_name)
+                                }
                               >
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 text-xs"
-                                >
-                                  <Download className="h-3 w-3 mr-1" />
-                                  Download
-                                </Button>
-                              </a>
+                                <Download className="h-3 w-3 mr-1" />
+                                Download
+                              </Button>
                             </div>
                           </div>
                         );

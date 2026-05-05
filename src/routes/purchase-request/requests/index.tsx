@@ -7,8 +7,7 @@ const requestsSearchSchema = z.object({
   filter: z.string().optional(),
   ticket_id: z.string().optional(),
   status: z.string().optional(),
-  requestId: z.string().optional(),
-  action: z.enum(["create", "edit"]).optional(),
+  action: z.enum(["create"]).optional(),
 });
 
 export const Route = createFileRoute("/purchase-request/requests/")({

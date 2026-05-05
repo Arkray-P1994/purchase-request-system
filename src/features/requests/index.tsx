@@ -10,21 +10,11 @@ import { useDataTableState } from "@/hooks/table-state";
 import { Link, useSearch } from "@tanstack/react-router";
 import { Plus, FileText } from "lucide-react";
 import { Columns } from "./components/columns";
-import { ViewRequest } from "./components/view";
 import { CreateRequestPage } from "./create";
-import { EditRequestPage } from "./edit";
 
 export function RequestsPage() {
   const search = useSearch({ from: "/purchase-request/requests/" }) as any;
-  const { requestId, action } = search;
-
-  if (requestId && action === "edit") {
-    return <EditRequestPage />;
-  }
-
-  if (requestId) {
-    return <ViewRequest />;
-  }
+  const { action } = search;
 
   if (action === "create") {
     return <CreateRequestPage />;

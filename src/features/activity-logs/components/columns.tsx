@@ -47,8 +47,8 @@ export const Columns: ColumnDef<ActivityLog>[] = [
       
       return (
         <Link 
-          to="/purchase-request/requests" 
-          search={{ requestId: String(request.id) }}
+          to="/purchase-request/requests/$requestId" 
+          params={{ requestId: String(request.id) }}
           className="font-mono text-xs font-bold text-primary hover:underline"
         >
           {request.ticket_id}

@@ -16,7 +16,9 @@ import { RequestDistribution } from "./charts/request-distribution";
 import { StatusDistribution } from "./charts/status-distribution";
 import { TeamDistribution } from "./charts/team-distribution";
 import { CostCenterExpenditure } from "./charts/cost-center-expenditure";
+import { StatusBadge } from "../requests/components/status-badge";
 import { format } from "date-fns";
+import { Link } from "@tanstack/react-router";
 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
@@ -32,6 +34,7 @@ export default function DashboardPage() {
   const approved = stats.Approved ?? 0;
   const disapproved = stats.Disapproved ?? 0;
   const draft = stats.Draft ?? 0;
+  const draftRequests = data.draft_requests ?? [];
 
   return (
     <>
@@ -142,13 +145,17 @@ export default function DashboardPage() {
                           className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
                         >
                           <td className="p-4 align-middle font-medium">
-                            {req.ticket_id}
+                            <Link
+                              to="/purchase-request/requests/$requestId"
+                              params={{ requestId: String(req.id) }}
+                              className="text-primary hover:underline"
+                            >
+                              {req.ticket_id}
+                            </Link>
                           </td>
                           <td className="p-4 align-middle">{req.requestor_name}</td>
                           <td className="p-4 align-middle">
-                            <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2">
-                              {req.status_name}
-                            </span>
+                            <StatusBadge status={req.status_name} />
                           </td>
                           <td className="p-4 align-middle text-muted-foreground">
                             {format(new Date(req.created_at), "MMM dd, yyyy")}
@@ -175,16 +182,38 @@ export default function DashboardPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Drafts
+                List of Drafts
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="text-4xl font-bold text-muted-foreground/30">
-                {draft}
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                You have {draft} request{draft !== 1 ? "s" : ""} saved as draft.
-              </p>
+            <CardContent>
+              {draftRequests.length > 0 ? (
+                <div className="space-y-4">
+                  {draftRequests.map((req) => (
+                    <div key={req.id} className="flex flex-col space-y-1 border-b pb-2 last:border-0 last:pb-0">
+                      <Link
+                        to="/purchase-request/requests/$requestId"
+                        params={{ requestId: String(req.id) }}
+                        className="text-sm font-bold text-primary hover:underline"
+                      >
+                        {req.ticket_id}
+                      </Link>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <span>{req.requestor_name}</span>
+                        <span>{format(new Date(req.created_at), "MMM dd")}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <div className="text-4xl font-bold text-muted-foreground/30">
+                    {draft}
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    No drafts found.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

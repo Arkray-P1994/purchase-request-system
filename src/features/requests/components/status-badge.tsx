@@ -18,9 +18,10 @@ export function StatusBadge({ status }: StatusBadgeProps) {
 
   return (
     <Badge
+      variant="outline"
       className={`px-2 py-0.5 font-bold uppercase tracking-wider text-[10px] border ${
         variants[status] || "bg-muted text-muted-foreground border-transparent"
-      } shadow-none`}
+      } shadow-none cursor-default`}
     >
       {status}
     </Badge>

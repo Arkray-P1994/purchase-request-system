@@ -33,7 +33,7 @@ export function EditRequestPage() {
   const isEditableForUser = ["Pending", "Draft"].includes(statusName);
   
   // Admins can edit almost anything, EXCEPT finalized accounting/approval states
-  const isFinalized = ["For Cash Release", "Cash Released", "Approved", "Disapproved", "Rejected"].includes(statusName);
+  const isFinalized = ["For Cash Release", "Released", "Cash Released", "Approved", "Disapproved", "Rejected"].includes(statusName);
   const canAdminEdit = isAdmin && !isFinalized;
 
   if (isFinalized && isAdmin) {

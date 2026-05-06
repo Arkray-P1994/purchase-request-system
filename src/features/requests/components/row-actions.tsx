@@ -17,10 +17,11 @@ import {
 } from "@/components/ui/dialog";
 import { Link } from "@tanstack/react-router";
 import type { Row } from "@tanstack/react-table";
-import { Eye, Pencil, Trash2, AlertTriangle } from "lucide-react";
+import { Eye, Pencil, Trash2, AlertTriangle, Ban } from "lucide-react";
 import { Request } from "./schema";
 import { ApprovalActions } from "./approval-actions";
 import { useDeleteRequest } from "../actions/delete-request";
+import { useCancelRequest } from "../actions/cancel-request";
 
 interface DataTableRowActionsProps {
   row: Row<Request>;
@@ -31,12 +32,14 @@ export function DataTableRowActions({
 }: DataTableRowActionsProps) {
   const { user } = useUser();
   const [openDelete, setOpenDelete] = useState(false);
+  const [openCancel, setOpenCancel] = useState(false);
   const { trigger: deleteReq, isMutating: isDeleting } = useDeleteRequest(String(row.original.id));
+  const { trigger: cancelReq, isMutating: isCancelling } = useCancelRequest(String(row.original.id));
 
   const isAdmin = user?.user?.role?.toLowerCase() === "admin";
   const isCreator = String(user?.user?.id) === String(row.original.user_id?.id);
   const statusName = row.original.status_id?.name || "";
-  const isFinalized = ["For Cash Release", "Cash Released", "Approved", "Disapproved", "Rejected"].includes(statusName);
+  const isFinalized = ["For Cash Release", "Released", "Cash Released", "Approved", "Disapproved", "Rejected"].includes(statusName);
   const canModify = isAdmin ? !isFinalized : ["Pending", "Draft"].includes(statusName) && isCreator;
 
   return (
@@ -87,16 +90,68 @@ export function DataTableRowActions({
               <TooltipTrigger asChild>
                 <Button
                   variant="ghost"
-                  className="cursor-pointer h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 text-red-500"
-                  onClick={() => setOpenDelete(true)}
+                  className="cursor-pointer h-8 w-8 p-0 hover:bg-orange-50 hover:text-orange-600 text-orange-500"
+                  onClick={() => setOpenCancel(true)}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Ban className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="bottom">
-                <p className="text-[10px] font-bold">Delete Request</p>
+                <p className="text-[10px] font-bold">Cancel Request</p>
               </TooltipContent>
             </Tooltip>
+
+            {isAdmin && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="cursor-pointer h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600 text-red-500"
+                    onClick={() => setOpenDelete(true)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  <p className="text-[10px] font-bold">Delete Request</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+
+            <Dialog open={openCancel} onOpenChange={setOpenCancel}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <div className="bg-orange-100 w-fit p-2 rounded-full mb-2">
+                    <Ban className="h-6 w-6 text-orange-600" />
+                  </div>
+                  <DialogTitle>Confirm Cancellation</DialogTitle>
+                  <DialogDescription className="text-sm">
+                    Are you sure you want to cancel request <span className="font-bold text-foreground">#{row.original.ticket_id}</span>? 
+                    This will stop the approval process and notify involved parties.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="gap-2 sm:gap-0">
+                  <Button
+                    variant="outline"
+                    onClick={() => setOpenCancel(false)}
+                    disabled={isCancelling}
+                  >
+                    No, keep it
+                  </Button>
+                  <Button
+                    variant="default"
+                    className="bg-orange-600 hover:bg-orange-700 text-white border-none"
+                    onClick={async () => {
+                      await cancelReq({ causer_id: user?.user?.id });
+                      setOpenCancel(false);
+                    }}
+                    disabled={isCancelling}
+                  >
+                    {isCancelling ? "Cancelling..." : "Yes, Cancel Request"}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             <Dialog open={openDelete} onOpenChange={setOpenDelete}>
               <DialogContent className="sm:max-w-md">

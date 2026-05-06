@@ -17,6 +17,7 @@ type BaseNavItem = {
   badge?: string
   icon?: React.ElementType
   adminOnly?: boolean
+  onClick?: () => void
 }
 
 type NavLink = BaseNavItem & {

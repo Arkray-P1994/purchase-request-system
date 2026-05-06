@@ -92,10 +92,18 @@ function SidebarMenuLink({
   const isActive = checkIsActive(href, item, false);
   const isSemiActive = checkIsSemiActive(href, item);
 
+  const content = (
+    <>
+      {item.icon && <item.icon />}
+      <span>{item.title}</span>
+      {item.badge && <NavBadge>{item.badge}</NavBadge>}
+    </>
+  );
+
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        asChild
+        asChild={!item.onClick}
         isActive={isActive}
         className={
           isActive
@@ -105,19 +113,25 @@ function SidebarMenuLink({
               : ""
         }
         tooltip={item.title}
+        onClick={item.onClick ? () => {
+          item.onClick?.();
+          setOpenMobile(false);
+        } : undefined}
       >
-        <Link
-          to={item.url}
-          // @ts-ignore
-          search={item.search ? (prev: any) => ({ ...prev, ...item.search }) : undefined}
-          onClick={() => {
-            setOpenMobile(false);
-          }}
-        >
-          {item.icon && <item.icon />}
-          <span>{item.title}</span>
-          {item.badge && <NavBadge>{item.badge}</NavBadge>}
-        </Link>
+        {item.onClick ? (
+          content
+        ) : (
+          <Link
+            to={item.url}
+            // @ts-ignore
+            search={item.search ? (prev: any) => ({ ...prev, ...item.search }) : undefined}
+            onClick={() => {
+              setOpenMobile(false);
+            }}
+          >
+            {content}
+          </Link>
+        )}
       </SidebarMenuButton>
     </SidebarMenuItem>
   );

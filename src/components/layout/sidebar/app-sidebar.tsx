@@ -10,6 +10,9 @@ import { NavUser } from "./nav-user";
 import { sidebarData } from "./sidebar-data";
 import { useUser } from "@/api/fetch-user";
 import { NavGroup } from "./nav-group";
+import { TeamSwitcher } from "./team-switcher";
+import { LogOut } from "lucide-react";
+import { useLogout } from "@/features/auth/actions/logout";
 
 export function AppSidebar() {
   const { collapsible, variant } = useLayout();
@@ -22,17 +25,44 @@ export function AppSidebar() {
       if (item.adminOnly) {
         const pos = user?.user?.position?.toLowerCase();
         const role = user?.user?.role?.toLowerCase();
-        return pos === "admin" || pos === "superadmin" || role === "admin" || role === "superadmin";
+        return (
+          pos === "admin" ||
+          pos === "superadmin" ||
+          role === "admin" ||
+          role === "superadmin"
+        );
       }
       return true;
     }),
   }));
 
+  const { trigger: logout } = useLogout();
+
+  const finalNavGroups = filteredNavGroups.map((group) => {
+    if (group.title === "Settings") {
+      return {
+        ...group,
+        items: [
+          ...group.items,
+          {
+            title: "Logout",
+            url: "#",
+            icon: LogOut,
+            onClick: logout,
+          },
+        ],
+      };
+    }
+    return group;
+  });
+
   return (
     <Sidebar collapsible={collapsible} variant={variant}>
-      <SidebarHeader></SidebarHeader>
+      <SidebarHeader>
+        <TeamSwitcher />
+      </SidebarHeader>{" "}
       <SidebarContent>
-        {filteredNavGroups.map((props: { title: any }) => (
+        {finalNavGroups.map((props: { title: any }) => (
           <NavGroup items={[]} key={props.title} {...props} />
         ))}
       </SidebarContent>

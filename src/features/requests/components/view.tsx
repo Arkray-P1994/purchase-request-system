@@ -39,6 +39,7 @@ import { ApprovalActions } from "./approval-actions";
 import { StatusBadge } from "./status-badge";
 import Spinner from "@/components/ui/spinner";
 import { useDeleteRequest } from "../actions/delete-request";
+import { useCancelRequest } from "../actions/cancel-request";
 import { useUser } from "@/api/fetch-user";
 import {
   Dialog,
@@ -48,7 +49,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Trash2, AlertTriangle } from "lucide-react";
+import { Trash2, AlertTriangle, Ban } from "lucide-react";
 
 async function forceDownload(url: string, filename: string) {
   try {
@@ -72,6 +73,7 @@ export function ViewRequest() {
   const { requestId } = useParams({ strict: false }) as any;
   const { user } = useUser();
   const [openDelete, setOpenDelete] = useState(false);
+  const [openCancel, setOpenCancel] = useState(false);
   const [selectedAttachment, setSelectedAttachment] = useState<string | null>(
     null,
   );
@@ -80,6 +82,9 @@ export function ViewRequest() {
   );
   const { data: request, isLoading } = useRequest({ id: requestId });
   const { trigger: deleteReq, isMutating: isDeleting } = useDeleteRequest(
+    String(requestId),
+  );
+  const { trigger: cancelReq, isMutating: isCancelling } = useCancelRequest(
     String(requestId),
   );
 
@@ -127,7 +132,7 @@ export function ViewRequest() {
             <div className="flex items-center gap-2">
               {request && <ApprovalActions request={request} />}
               {request && (user?.user?.role?.toLowerCase() === "admin" 
-                ? !["For Cash Release", "Cash Released", "Approved", "Disapproved", "Rejected"].includes(request.status_id?.name || "")
+                ? !["For Cash Release", "Released", "Approved", "Disapproved", "Rejected"].includes(request.status_id?.name || "")
                 : ["Pending", "Draft"].includes(request.status_id?.name || "")) && (
                 <>
                   <Link
@@ -139,15 +144,66 @@ export function ViewRequest() {
                       Edit Request
                     </Button>
                   </Link>
+
                   <Button
                     variant="outline"
                     size="sm"
-                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                    onClick={() => setOpenDelete(true)}
+                    className="text-orange-500 hover:bg-orange-50 hover:text-orange-600 border-orange-200"
+                    onClick={() => setOpenCancel(true)}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
-                    Delete Request
+                    <Ban className="mr-2 h-4 w-4" />
+                    Cancel Request
                   </Button>
+
+                  {user?.user?.role?.toLowerCase() === "admin" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => setOpenDelete(true)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Delete Request
+                    </Button>
+                  )}
+
+                  <Dialog open={openCancel} onOpenChange={setOpenCancel}>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <div className="bg-orange-100 w-fit p-2 rounded-full mb-2">
+                          <Ban className="h-6 w-6 text-orange-600" />
+                        </div>
+                        <DialogTitle>Confirm Cancellation</DialogTitle>
+                        <DialogDescription className="text-sm">
+                          Are you sure you want to cancel request{" "}
+                          <span className="font-bold text-foreground">
+                            #{request.ticket_id}
+                          </span>
+                          ? This will stop the approval process and notify involved parties.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter className="gap-2 sm:gap-0">
+                        <Button
+                          variant="outline"
+                          onClick={() => setOpenCancel(false)}
+                          disabled={isCancelling}
+                        >
+                          No, keep it
+                        </Button>
+                        <Button
+                          variant="default"
+                          className="bg-orange-600 hover:bg-orange-700 text-white border-none"
+                          onClick={async () => {
+                            await cancelReq({ causer_id: user?.user?.id });
+                            setOpenCancel(false);
+                          }}
+                          disabled={isCancelling}
+                        >
+                          {isCancelling ? "Cancelling..." : "Yes, Cancel Request"}
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
 
                   <Dialog open={openDelete} onOpenChange={setOpenDelete}>
                     <DialogContent className="sm:max-w-md">

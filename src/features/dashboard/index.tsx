@@ -19,6 +19,8 @@ import { CostCenterExpenditure } from "./charts/cost-center-expenditure";
 import { StatusBadge } from "../requests/components/status-badge";
 import { format } from "date-fns";
 import { Link } from "@tanstack/react-router";
+import { ConfigDrawer } from "@/components/layout/config-drawer";
+import { ModeToggle } from "@/components/toggle";
 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
@@ -38,7 +40,12 @@ export default function DashboardPage() {
 
   return (
     <>
-      <Header fixed />
+      <Header fixed>
+        <div className="ms-auto flex items-center space-x-4">
+          <ModeToggle />
+          <ConfigDrawer />
+        </div>
+      </Header>
       <Main>
         <div className="mb-2 flex items-center justify-between space-y-2">
           <h1 className="text-2xl font-bold tracking-tight">
@@ -49,7 +56,9 @@ export default function DashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Requests
+              </CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -63,7 +72,9 @@ export default function DashboardPage() {
               <Hourglass className="h-4 w-4 text-amber-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{pending.toLocaleString()}</div>
+              <div className="text-2xl font-bold">
+                {pending.toLocaleString()}
+              </div>
             </CardContent>
           </Card>
 
@@ -73,7 +84,9 @@ export default function DashboardPage() {
               <CheckCircle2 className="h-4 w-4 text-emerald-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{approved.toLocaleString()}</div>
+              <div className="text-2xl font-bold">
+                {approved.toLocaleString()}
+              </div>
             </CardContent>
           </Card>
 
@@ -91,11 +104,15 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Avg. Approval Time</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Avg. Approval Time
+              </CardTitle>
               <Clock className="h-4 w-4 text-blue-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{kpis.average_approval_time}</div>
+              <div className="text-2xl font-bold">
+                {kpis.average_approval_time}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -153,7 +170,9 @@ export default function DashboardPage() {
                               {req.ticket_id}
                             </Link>
                           </td>
-                          <td className="p-4 align-middle">{req.requestor_name}</td>
+                          <td className="p-4 align-middle">
+                            {req.requestor_name}
+                          </td>
                           <td className="p-4 align-middle">
                             <StatusBadge status={req.status_name} />
                           </td>
@@ -189,7 +208,10 @@ export default function DashboardPage() {
               {draftRequests.length > 0 ? (
                 <div className="space-y-4">
                   {draftRequests.map((req) => (
-                    <div key={req.id} className="flex flex-col space-y-1 border-b pb-2 last:border-0 last:pb-0">
+                    <div
+                      key={req.id}
+                      className="flex flex-col space-y-1 border-b pb-2 last:border-0 last:pb-0"
+                    >
                       <Link
                         to="/purchase-request/requests/$requestId"
                         params={{ requestId: String(req.id) }}
@@ -199,7 +221,9 @@ export default function DashboardPage() {
                       </Link>
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
                         <span>{req.requestor_name}</span>
-                        <span>{format(new Date(req.created_at), "MMM dd")}</span>
+                        <span>
+                          {format(new Date(req.created_at), "MMM dd")}
+                        </span>
                       </div>
                     </div>
                   ))}

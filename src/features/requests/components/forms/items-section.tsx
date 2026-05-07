@@ -1,7 +1,7 @@
 import { useFieldArray, useFormContext } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { CreateRequestValues } from "../schema";
+import { CreateRequestValues, BudgetEntry, BudgetSubEntry } from "../schema";
 import { useBudgetEntries } from "@/api/fetch-budget";
 import {
   Table,
@@ -10,13 +10,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useEffect } from "react";
 import { ItemTableRow } from "./item-table-row";
 import { ItemMobileCard } from "./item-mobile-card";
 import { cn } from "@/lib/utils";
 
 export function ItemsSection() {
-  const { control, watch, setValue, setError, clearErrors, formState: { errors } } = useFormContext<CreateRequestValues>();
+  const { control, watch, setValue, formState: { errors } } = useFormContext<CreateRequestValues>();
   const { fields, append, remove } = useFieldArray({
     control,
     name: "items",
@@ -26,14 +25,14 @@ export function ItemsSection() {
   const items = watch("items") || [];
   const costCenter = watch("cost_center");
 
-  const selectedEntry = budgetEntries?.find(
-    (b: any) =>
+  const selectedEntry = (budgetEntries as BudgetEntry[])?.find(
+    (b: BudgetEntry) =>
       `${b.unq_code} - ${b.name}` === costCenter ||
       `${b.name} - ${b.unq_code}` === costCenter,
   );
 
   const budgetCodeOptions =
-    selectedEntry?.budget_entries?.map((item: any) => ({
+    selectedEntry?.budget_entries?.map((item: BudgetSubEntry) => ({
       id: item.id,
       name: `${item.account_code} - ${item.item_name}`,
       balance: Number(item.remaining || 0),
@@ -41,39 +40,10 @@ export function ItemsSection() {
 
   const totalAmount =
     items.reduce(
-      (sum: number, item: any) =>
+      (sum: number, item: CreateRequestValues['items'][number]) =>
         sum + (Number(item.quantity) || 0) * (Number(item.unit_price) || 0),
       0,
     );
-
-  useEffect(() => {
-    // Calculate aggregate totals per budget code
-    const aggregateTotals: Record<string, number> = {};
-    items.forEach((item: any) => {
-      if (item.budget_code) {
-        const itemTotal = (Number(item.quantity) || 0) * (Number(item.unit_price) || 0);
-        aggregateTotals[item.budget_code] = (aggregateTotals[item.budget_code] || 0) + itemTotal;
-      }
-    });
-
-    items.forEach((item: any, index: number) => {
-      const option = budgetCodeOptions.find((opt: any) => opt.name === item.budget_code);
-      if (option) {
-        const totalForThisBudget = aggregateTotals[item.budget_code];
-        if (totalForThisBudget > option.balance) {
-          setError(`items.${index}.unit_price` as any, {
-            type: "manual",
-            message: "Insufficient budget",
-          });
-        } else {
-          const fieldError = errors?.items?.[index]?.unit_price;
-          if (fieldError?.type === "manual") {
-            clearErrors(`items.${index}.unit_price` as any);
-          }
-        }
-      }
-    });
-  }, [items, budgetCodeOptions, setError, clearErrors, errors]);
 
   return (
     <div className="space-y-6 w-full min-w-0">
@@ -83,9 +53,9 @@ export function ItemsSection() {
           <p className="text-sm text-muted-foreground">
             List all items for this procurement request.
           </p>
-          {((errors.items as any)?.message || (errors.items as any)?.root?.message) && (
+          {(errors.items?.message) && (
             <p className="text-xs font-bold text-destructive uppercase tracking-wider mt-1 animate-pulse">
-              {((errors.items as any)?.message || (errors.items as any)?.root?.message) as string}
+              {errors.items?.message as string}
             </p>
           )}
         </div>
@@ -113,7 +83,7 @@ export function ItemsSection() {
 
       <div className={cn(
         "border rounded-xl bg-card shadow-sm overflow-hidden flex flex-col w-full transition-all duration-300",
-        ((errors.items as any)?.message || (errors.items as any)?.root?.message) && "border-destructive ring-1 ring-destructive/20 shadow-md shadow-destructive/5"
+        errors.items?.message && "border-destructive ring-1 ring-destructive/20 shadow-md shadow-destructive/5"
       )}>
         {/* Desktop View: Table */}
         <div className="hidden xl:block w-full overflow-x-auto relative">
@@ -135,10 +105,10 @@ export function ItemsSection() {
               <TableBody>
                 {fields.map((field, index) => {
                   const item = items[index];
-                  const selectedBudget = budgetCodeOptions.find((opt: any) => opt.name === item?.budget_code);
+                  const selectedBudget = budgetCodeOptions.find((opt) => opt.name === item?.budget_code);
                   
                   // Calculate aggregate total for this item's budget code
-                  const totalForThisBudget = items.reduce((sum: number, it: any) => {
+                  const totalForThisBudget = items.reduce((sum: number, it: CreateRequestValues['items'][number]) => {
                     if (it.budget_code && it.budget_code === item?.budget_code) {
                       return sum + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
                     }
@@ -157,8 +127,8 @@ export function ItemsSection() {
                       selectedBudget={selectedBudget}
                       isOverBudget={!!isOverBudget}
                       onRemove={remove}
-                      onBudgetSelect={(option: any) => {
-                        setValue(`items.${index}.budget_id` as any, Number(option.id), { shouldDirty: true, shouldValidate: true });
+                      onBudgetSelect={(option: { id: number; name: string; balance: number }) => {
+                        setValue(`items.${index}.budget_id` as const, Number(option.id), { shouldDirty: true, shouldValidate: true });
                       }}
                     />
                   );
@@ -172,10 +142,10 @@ export function ItemsSection() {
         <div className="xl:hidden divide-y divide-border">
           {fields.map((field, index) => {
             const item = items[index];
-            const selectedBudget = budgetCodeOptions.find((opt: any) => opt.name === item?.budget_code);
+            const selectedBudget = budgetCodeOptions.find((opt) => opt.name === item?.budget_code);
             
             // Calculate aggregate total for this item's budget code
-            const totalForThisBudget = items.reduce((sum: number, it: any) => {
+            const totalForThisBudget = items.reduce((sum: number, it: CreateRequestValues['items'][number]) => {
               if (it.budget_code && it.budget_code === item?.budget_code) {
                 return sum + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
               }
@@ -194,8 +164,8 @@ export function ItemsSection() {
                 selectedBudget={selectedBudget}
                 isOverBudget={!!isOverBudget}
                 onRemove={remove}
-                onBudgetSelect={(option: any) => {
-                  setValue(`items.${index}.budget_id` as any, Number(option.id), { shouldDirty: true, shouldValidate: true });
+                onBudgetSelect={(option: { id: number; name: string; balance: number }) => {
+                  setValue(`items.${index}.budget_id` as const, Number(option.id), { shouldDirty: true, shouldValidate: true });
                 }}
               />
             );

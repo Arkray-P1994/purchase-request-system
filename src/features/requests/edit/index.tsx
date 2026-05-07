@@ -9,7 +9,7 @@ import { useParams } from "@tanstack/react-router";
 import Spinner from "@/components/ui/spinner";
 
 export function EditRequestPage() {
-  const { requestId } = useParams({ strict: false }) as any;
+  const { requestId } = useParams({ strict: false }) as { requestId: string };
   const { data: request, isLoading } = useRequest({ id: requestId });
   const { user } = useUser();
 

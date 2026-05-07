@@ -4,15 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Trash2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { Control } from "react-hook-form";
+import { CreateRequestValues } from "../schema";
+
 interface ItemTableRowProps {
   index: number;
-  control: any;
-  item: any;
-  budgetCodeOptions: any[];
-  selectedBudget: any;
+  control: Control<CreateRequestValues>;
+  item: CreateRequestValues['items'][number];
+  budgetCodeOptions: { id: number; name: string; balance: number }[];
+  selectedBudget: { id: number; name: string; balance: number } | undefined;
   isOverBudget: boolean;
   onRemove: (index: number) => void;
-  onBudgetSelect: (option: any) => void;
+  onBudgetSelect: (option: { id: number; name: string; balance: number }) => void;
 }
 
 export function ItemTableRow({
@@ -31,7 +34,7 @@ export function ItemTableRow({
       <TableCell className="p-3 border-r align-top">
         <Field
           control={control}
-          name={`items.${index}.item_title` as any}
+          name={`items.${index}.item_title` as const}
           label="Title"
           placeholder="What are you buying?"
           variant="textarea"
@@ -45,7 +48,7 @@ export function ItemTableRow({
         <div className="space-y-1.5">
           <Field
             control={control}
-            name={`items.${index}.budget_code` as any}
+            name={`items.${index}.budget_code` as const}
             label="Budget Code"
             placeholder="Select budget..."
             variant="combobox"
@@ -67,7 +70,7 @@ export function ItemTableRow({
       <TableCell className="p-3 border-r align-top">
         <Field
           control={control}
-          name={`items.${index}.item_purpose` as any}
+          name={`items.${index}.item_purpose` as const}
           label="Purpose"
           placeholder="Why is this needed?"
           variant="textarea"
@@ -81,7 +84,7 @@ export function ItemTableRow({
         <div className="space-y-1">
           <Field
             control={control}
-            name={`items.${index}.unit_price` as any}
+            name={`items.${index}.unit_price` as const}
             label="Price"
             type="number"
             min={0}
@@ -99,7 +102,7 @@ export function ItemTableRow({
       <TableCell className="p-3 border-r align-top">
         <Field
           control={control}
-          name={`items.${index}.quantity` as any}
+          name={`items.${index}.quantity` as const}
           label="Qty"
           type="number"
           min={0}
@@ -116,7 +119,7 @@ export function ItemTableRow({
       <TableCell className="p-3 border-r align-top">
         <Field
           control={control}
-          name={`items.${index}.item_remarks` as any}
+          name={`items.${index}.item_remarks` as const}
           label="Remarks"
           placeholder="Any extra details?"
           variant="textarea"

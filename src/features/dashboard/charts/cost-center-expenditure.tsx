@@ -62,7 +62,7 @@ export function CostCenterExpenditure({ data }: CostCenterExpenditureProps) {
     <Card className="lg:col-span-3">
       <CardHeader>
         <CardTitle>Expenditure by Cost Center</CardTitle>
-        <CardDescription>Top cost centers by total approved amount</CardDescription>
+        <CardDescription>Top cost centers by total released and for release amount</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[300px] w-full">

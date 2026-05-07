@@ -25,13 +25,15 @@ interface DatePickerProps<T extends FieldValues> {
   name: Path<T>;
   label?: string;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export function DatePicker<T extends FieldValues>({ 
   control, 
   name, 
   label, 
-  placeholder 
+  placeholder,
+  disabled = false
 }: DatePickerProps<T>) {
   const [calendarOpen, setCalendarOpen] = useState(false);
 
@@ -51,6 +53,7 @@ export function DatePicker<T extends FieldValues>({
                     "w-full pl-3 text-left font-normal border-muted-foreground text-xs",
                     !field.value && "text-muted-foreground"
                   )}
+                  disabled={disabled}
                 >
                   {field.value ? (
                     format(field.value, "PPP")

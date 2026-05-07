@@ -33,8 +33,15 @@ export function Header({
   const navLinks = sidebarData.navGroups
     .flatMap((group) => group.items)
     .filter((item) => {
-      if (item.title === "Users") {
-        return user?.user?.position === "superadmin" || user?.user?.position === "admin" || user?.user?.role === "admin";
+      if (item.adminOnly) {
+        const pos = user?.user?.position?.toLowerCase();
+        const role = user?.user?.role?.toLowerCase();
+        return (
+          pos === "admin" ||
+          pos === "superadmin" ||
+          role === "admin" ||
+          role === "superadmin"
+        );
       }
       return true;
     })

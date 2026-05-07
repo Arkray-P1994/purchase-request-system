@@ -128,12 +128,14 @@ export default function DashboardPage() {
           <StatusDistribution data={data.statistics} />
         </div>
 
-        <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-6">
-          <TeamDistribution data={data.team_distribution} fullWidth={!isAdmin} />
-          {isAdmin && (
-            <CostCenterExpenditure data={data.expenditure_by_cost_center} />
-          )}
-        </div>
+        {(isAdmin || (user?.teams && user.teams.length > 1)) && (
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-6">
+            <TeamDistribution data={data.team_distribution} fullWidth={!isAdmin} />
+            {isAdmin && (
+              <CostCenterExpenditure data={data.expenditure_by_cost_center} />
+            )}
+          </div>
+        )}
 
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
           <Card className="lg:col-span-2">

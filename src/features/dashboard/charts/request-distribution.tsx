@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/select";
 import { RequestDistribution as RequestDistributionData } from "@/api/fetch-dashboard";
 
+import { format, subDays, eachDayOfInterval, isSameDay, parseISO } from "date-fns";
+
 export const description = "An interactive area chart for request volume";
 
 interface RequestDistributionProps {
@@ -50,17 +52,34 @@ export function RequestDistribution({ data }: RequestDistributionProps) {
 
   const chartData = React.useMemo(() => {
     if (!data) return [];
-    const source =
-      timeRange === "seven_days"
-        ? data.seven_days
-        : timeRange === "thirty_days"
-          ? data.thirty_days
-          : data.yearly;
 
-    return source.map((item: any) => ({
-      label: item.date || item.month,
-      requests: item.count,
-    }));
+    if (timeRange === "yearly") {
+      return data.yearly.map((item) => ({
+        label: item.month,
+        requests: item.count,
+      }));
+    }
+
+    const daysCount = timeRange === "seven_days" ? 6 : 29;
+    const endDate = new Date();
+    const startDate = subDays(endDate, daysCount);
+    
+    const interval = eachDayOfInterval({ start: startDate, end: endDate });
+    const source = timeRange === "seven_days" ? data.seven_days : data.thirty_days;
+
+    return interval.map((day) => {
+      const dateStr = format(day, "yyyy-MM-dd");
+      const found = source.find((item) => {
+        // Handle both ISO strings and yyyy-MM-dd strings
+        const itemDate = parseISO(item.date);
+        return isSameDay(itemDate, day);
+      });
+
+      return {
+        label: dateStr,
+        requests: found ? found.count : 0,
+      };
+    });
   }, [data, timeRange]);
 
   return (

@@ -3,15 +3,18 @@ import { Button } from "@/components/ui/button";
 import { Trash2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { Control } from "react-hook-form";
+import { CreateRequestValues } from "../schema";
+
 interface ItemMobileCardProps {
   index: number;
-  control: any;
-  item: any;
-  budgetCodeOptions: any[];
-  selectedBudget: any;
+  control: Control<CreateRequestValues>;
+  item: CreateRequestValues['items'][number];
+  budgetCodeOptions: { id: number; name: string; balance: number }[];
+  selectedBudget: { id: number; name: string; balance: number } | undefined;
   isOverBudget: boolean;
   onRemove: (index: number) => void;
-  onBudgetSelect: (option: any) => void;
+  onBudgetSelect: (option: { id: number; name: string; balance: number }) => void;
 }
 
 export function ItemMobileCard({
@@ -47,7 +50,7 @@ export function ItemMobileCard({
       <div className="grid grid-cols-1 gap-4">
         <Field
           control={control}
-          name={`items.${index}.item_title` as any}
+          name={`items.${index}.item_title` as const}
           label="Item Title"
           placeholder="What are you buying?"
           variant="input"
@@ -55,7 +58,7 @@ export function ItemMobileCard({
         <div className="space-y-2">
           <Field
             control={control}
-            name={`items.${index}.budget_code` as any}
+            name={`items.${index}.budget_code` as const}
             label="Budget Code"
             placeholder="Select budget code"
             variant="combobox"
@@ -73,7 +76,7 @@ export function ItemMobileCard({
         </div>
         <Field
           control={control}
-          name={`items.${index}.item_purpose` as any}
+          name={`items.${index}.item_purpose` as const}
           label="Purpose"
           placeholder="Why is this needed?"
           variant="input"
@@ -83,7 +86,7 @@ export function ItemMobileCard({
           <div className="space-y-2">
             <Field
               control={control}
-              name={`items.${index}.unit_price` as any}
+              name={`items.${index}.unit_price` as const}
               label="Unit Price"
               type="number"
               variant="input"
@@ -92,7 +95,7 @@ export function ItemMobileCard({
           </div>
           <Field
             control={control}
-            name={`items.${index}.quantity` as any}
+            name={`items.${index}.quantity` as const}
             label="Quantity"
             type="number"
             variant="input"
@@ -115,7 +118,7 @@ export function ItemMobileCard({
 
         <Field
           control={control}
-          name={`items.${index}.item_remarks` as any}
+          name={`items.${index}.item_remarks` as const}
           label="Remarks"
           placeholder="Optional details"
           variant="input"

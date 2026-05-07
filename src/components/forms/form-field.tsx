@@ -46,6 +46,7 @@ interface FieldProps<T extends FieldValues> {
   className?: string;
   onSelect?: (value: any) => void;
   readOnly?: boolean;
+  disabled?: boolean;
   autoGrow?: boolean;
   min?: number;
 }
@@ -73,6 +74,7 @@ export function Field<T extends FieldValues>({
   className = "",
   onSelect,
   readOnly = false,
+  disabled = false,
   autoGrow = false,
   min,
 }: FieldProps<T>) {
@@ -91,11 +93,13 @@ export function Field<T extends FieldValues>({
                 autoGrow={autoGrow}
                 {...field}
                 className={cn("border-muted-foreground resize-none", className)}
+                disabled={disabled}
               />
             ) : variant === "select" ? (
               <Select
                 value={String(field.value)}
                 onValueChange={(v) => field.onChange(Number(v))}
+                disabled={disabled}
               >
                 <SelectTrigger className="w-full border-muted-foreground">
                   <SelectValue placeholder={placeholder} />
@@ -114,7 +118,7 @@ export function Field<T extends FieldValues>({
                 </SelectContent>
               </Select>
             ) : variant === "select_by_name" ? (
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select value={field.value} onValueChange={field.onChange} disabled={disabled}>
                 <SelectTrigger className="w-full border-muted-foreground">
                   <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
@@ -133,7 +137,7 @@ export function Field<T extends FieldValues>({
                 </SelectContent>
               </Select>
             ) : variant === "select_by_id" ? (
-              <Select value={String(field.value)} onValueChange={(v) => field.onChange(v)}>
+              <Select value={String(field.value)} onValueChange={(v) => field.onChange(v)} disabled={disabled}>
                 <SelectTrigger className="w-full border-muted-foreground">
                   <SelectValue placeholder={placeholder} />
                 </SelectTrigger>
@@ -157,6 +161,7 @@ export function Field<T extends FieldValues>({
                 selectOptions={selectOptions}
                 className={className}
                 onSelect={onSelect}
+                disabled={disabled}
               />
             ) : variant === "combobox_by_id" ? (
               <ComboboxByIdField
@@ -166,6 +171,7 @@ export function Field<T extends FieldValues>({
                 selectOptions={selectOptions as SelectOption[]}
                 className={className}
                 onSelect={onSelect}
+                disabled={disabled}
               />
             ) : variant === "multi-select" ? (
               <MultiSelectField
@@ -174,6 +180,7 @@ export function Field<T extends FieldValues>({
                 label={label}
                 options={options}
                 className={className}
+                disabled={disabled}
               />
             ) : (
               <Input
@@ -196,6 +203,7 @@ export function Field<T extends FieldValues>({
                   }
                 }}
                 readOnly={readOnly}
+                disabled={disabled}
                 className={cn("text-xs border-muted-foreground", className)}
               />
             )}
@@ -215,6 +223,7 @@ function ComboboxField({
   selectOptions,
   className,
   onSelect,
+  disabled,
 }: {
   field: any;
   placeholder?: string;
@@ -222,6 +231,7 @@ function ComboboxField({
   selectOptions: any[];
   className?: string;
   onSelect?: (value: any) => void;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -237,6 +247,7 @@ function ComboboxField({
             !field.value && "text-muted-foreground",
             className
           )}
+          disabled={disabled}
         >
           <span className="flex-1 whitespace-normal break-words">
             {field.value
@@ -285,12 +296,14 @@ function MultiSelectField({
   label,
   options,
   className,
+  disabled,
 }: {
   field: any;
   placeholder?: string;
   label: string;
   options: any[];
   className?: string;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
   const selected = field.value || [];
@@ -310,6 +323,7 @@ function MultiSelectField({
             "w-full justify-between border-muted-foreground h-auto min-h-10 py-2 px-3 text-left font-normal",
             className
           )}
+          disabled={disabled}
         >
           <div className="flex flex-wrap gap-1">
             {selected.length > 0 ? (
@@ -389,6 +403,7 @@ function ComboboxByIdField({
   selectOptions,
   className,
   onSelect,
+  disabled,
 }: {
   field: any;
   placeholder?: string;
@@ -396,6 +411,7 @@ function ComboboxByIdField({
   selectOptions: SelectOption[];
   className?: string;
   onSelect?: (value: any) => void;
+  disabled?: boolean;
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -411,6 +427,7 @@ function ComboboxByIdField({
             !field.value && "text-muted-foreground",
             className
           )}
+          disabled={disabled}
         >
           <span className="flex-1 whitespace-normal break-words">
             {field.value

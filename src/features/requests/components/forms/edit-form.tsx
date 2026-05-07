@@ -1,12 +1,13 @@
 "use client";
 
+import { useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/forms/form-field";
-import { CreateRequestValues, createRequestSchema } from "../schema";
+import { CreateRequestValues, getCreateRequestSchema, BudgetEntry } from "../schema";
 import { ItemsSection } from "./items-section";
 import { useUpdateRequest } from "../../actions/update-request";
 import { useUser } from "@/api/fetch-user";
@@ -20,48 +21,33 @@ import {
   CURRENCY_OPTIONS
 } from "../../data/options";
 import { useBudgetEntries } from "@/api/fetch-budget";
+import { useTeams } from "@/api/fetch-teams";
 
 import { Paperclip, X, FileIcon, UploadCloud } from "lucide-react";
 import moment from "moment";
 
 interface EditRequestFormProps {
-  initialData: any;
+  initialData: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 }
 
 export function EditRequestForm({ initialData }: EditRequestFormProps) {
   const { user } = useUser();
+  const { teams: allTeams } = useTeams();
   const { data: budgetEntries } = useBudgetEntries();
   const { trigger, isMutating } = useUpdateRequest(initialData.id);
 
-  const costCenterOptions = budgetEntries
-    ? budgetEntries
-        .filter((b: any) => {
-          if (!user?.user?.teams) return false;
-          const isAdmin =
-            user?.user?.role?.toLowerCase() === "admin" ||
-            user?.user?.position?.toLowerCase() === "superadmin";
-          if (isAdmin) return true;
+  const isAdmin =
+    user?.user?.role?.toLowerCase() === "admin" ||
+    user?.user?.position?.toLowerCase() === "superadmin";
 
-          return user.user.teams.some(
-            (team: any) => {
-              const codeMatch = String(team.unq_code) === String(b.unq_code);
-              const nameMatch = b.name.toLowerCase().includes(team.name.toLowerCase()) || 
-                                team.name.toLowerCase().includes(b.name.toLowerCase());
-              return codeMatch || nameMatch;
-            }
-          );
-        })
-        .map((b: any) => ({
-          name: `${b.unq_code} - ${b.name}`,
-          fy_start: b.fy_start,
-          fy_end: b.fy_end,
-        }))
-    : [];
 
+
+  const schema = useMemo(() => getCreateRequestSchema(budgetEntries || []), [budgetEntries]);
   const form = useForm<CreateRequestValues>({
-    resolver: zodResolver(createRequestSchema) as any,
+    resolver: zodResolver(schema) as any,
     defaultValues: {
       team_id: String(initialData?.team_id?.id || ""),
+      remarks: initialData?.remarks || "",
       desired_delivery_date: initialData?.desired_delivery_date ? new Date(initialData.desired_delivery_date) : new Date(),
       transaction_type: initialData?.transaction_type || "Vendor Payment",
       payment_method: initialData?.payment_method || "Cash",
@@ -75,7 +61,7 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
       fy_start: initialData?.fy_start ? new Date(initialData.fy_start) : undefined,
       fy_end: initialData?.fy_end ? new Date(initialData.fy_end) : undefined,
       attachments: [],
-      items: initialData?.items && initialData.items.length > 0 ? initialData.items.map((item: any) => ({
+      items: initialData?.items && initialData.items.length > 0 ? initialData.items.map((item: CreateRequestValues['items'][number]) => ({
           item_title: item.item_title || "",
           quantity: item.quantity || 1,
           unit_price: item.unit_price || 0,
@@ -96,9 +82,35 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
     },
   });
 
+  const teamId = form.watch("team_id");
+  const teamOptions = isAdmin ? allTeams : (user?.user?.teams ?? []);
+
+  useEffect(() => {
+    if (teamId && budgetEntries) {
+      const selectedTeam = teamOptions.find((t: any) => String(t.id) === String(teamId));
+      if (selectedTeam) {
+        const matchingBudget = (budgetEntries as BudgetEntry[]).find(b => 
+          String(b.unq_code) === String((selectedTeam as any).unq_code) ||
+          b.name.toLowerCase().includes(selectedTeam.name.toLowerCase()) ||
+          selectedTeam.name.toLowerCase().includes(b.name.toLowerCase())
+        );
+
+        if (matchingBudget) {
+          const costCenterValue = `${matchingBudget.unq_code} - ${matchingBudget.name}`;
+          // Only update if it's actually different to avoid resetting on initial load
+          if (form.getValues("cost_center") !== costCenterValue) {
+            form.setValue("cost_center", costCenterValue, { shouldDirty: true, shouldValidate: true });
+            if (matchingBudget.fy_start) form.setValue("fy_start", new Date(matchingBudget.fy_start), { shouldDirty: true, shouldValidate: true });
+            if (matchingBudget.fy_end) form.setValue("fy_end", new Date(matchingBudget.fy_end), { shouldDirty: true, shouldValidate: true });
+          }
+        }
+      }
+    }
+  }, [teamId, budgetEntries, teamOptions, form]);
+
   const attachments = form.watch("attachments");
 
-  async function onSubmit(values: any, isDraft = false) {
+  async function onSubmit(values: CreateRequestValues, isDraft = false) {
     const formData = new FormData();
     
     // Append top-level fields
@@ -109,14 +121,15 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
     }
     
     formData.append("transaction_type", values.transaction_type);
+    formData.append("remarks", values.remarks || "");
     formData.append("payment_method", values.payment_method);
     formData.append("purchase_type", values.purchase_type);
     formData.append("cost_center", values.cost_center);
     formData.append("currency", values.currency);
     formData.append("vendor", values.vendor);
     formData.append("payee", values.payee);
-    formData.append("charge_to", values.charge_to);
-    formData.append("management_number", values.management_number);
+    formData.append("charge_to", values.charge_to || "");
+    formData.append("management_number", values.management_number || "");
     formData.append("fy_start", values.fy_start ? moment(values.fy_start).format("YYYY-MM-DD") : "");
     formData.append("fy_end", values.fy_end ? moment(values.fy_end).format("YYYY-MM-DD") : "");
     formData.append("status_id", isDraft ? "7" : "1");
@@ -126,7 +139,7 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
 
     // Append files
     if (values.attachments && values.attachments.length > 0) {
-      values.attachments.forEach((file: any) => {
+      values.attachments.forEach((file: File) => {
         formData.append("attachments[]", file);
       });
     }
@@ -157,7 +170,7 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((v) => onSubmit(v, false))} className="relative space-y-8 pb-32">
+      <form onSubmit={form.handleSubmit((v: CreateRequestValues) => onSubmit(v, false))} className="relative space-y-8 pb-32">
         <div className="space-y-8">
           {/* Main Content Area */}
           <Card className="shadow-sm border-none bg-card/60 backdrop-blur-sm">
@@ -166,11 +179,23 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <Field
+                  control={form.control}
+                  name="team_id"
+                  label="Team"
+                  variant="select_by_id"
+                  disabled={!isAdmin || isMutating}
+                  selectOptions={teamOptions.map((t: any) => ({
+                    id: t.id,
+                    name: t.name,
+                  }))}
+                />
                 <DatePicker 
                   control={form.control} 
                   name="desired_delivery_date" 
                   label="Desired Delivery Date"
                   placeholder="When is this needed?"
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
@@ -178,6 +203,7 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
                   label="Transaction Type"
                   variant="select_by_name"
                   selectOptions={TRANSACTION_TYPE_OPTIONS}
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
@@ -185,6 +211,7 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
                   label="Payment Method"
                   variant="select_by_name"
                   selectOptions={PAYMENT_METHOD_OPTIONS}
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
@@ -192,27 +219,29 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
                   label="Purchase Type"
                   variant="select_by_name"
                   selectOptions={PURCHASE_TYPE_OPTIONS}
+                  disabled={isMutating}
                 />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <Field
                   control={form.control}
                   name="currency"
                   label="Currency"
                   variant="select_by_name"
                   selectOptions={CURRENCY_OPTIONS}
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
                   name="vendor"
                   label="Vendor"
                   variant="input"
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
                   name="payee"
                   label="Payee / Recipient"
                   variant="input"
+                  disabled={isMutating}
                 />
               </div>
             </CardContent>
@@ -228,12 +257,9 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
                   control={form.control}
                   name="cost_center"
                   label="Cost Center"
-                  variant="combobox"
-                  selectOptions={costCenterOptions}
-                  onSelect={(option) => {
-                    if (option.fy_start) form.setValue("fy_start", new Date(option.fy_start), { shouldDirty: true, shouldValidate: true });
-                    if (option.fy_end) form.setValue("fy_end", new Date(option.fy_end), { shouldDirty: true, shouldValidate: true });
-                  }}
+                  variant="input"
+                  disabled={true}
+                  placeholder="Will be based on selected Team"
                 />
                 <Field
                   control={form.control}

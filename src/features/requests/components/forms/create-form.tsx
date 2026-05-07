@@ -1,12 +1,13 @@
 "use client";
 
+import { useMemo, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field } from "@/components/forms/form-field";
-import { CreateRequestValues, createRequestSchema } from "../schema";
+import { CreateRequestValues, getCreateRequestSchema, BudgetEntry } from "../schema";
 import { ItemsSection } from "./items-section";
 import { useCreateRequest } from "../../actions/create-request";
 import { useUser } from "@/api/fetch-user";
@@ -20,41 +21,25 @@ import {
   CURRENCY_OPTIONS,
 } from "../../data/options";
 import { useBudgetEntries } from "@/api/fetch-budget";
+import { useTeams } from "@/api/fetch-teams";
 
 import { Paperclip, X, FileIcon, UploadCloud } from "lucide-react";
 import moment from "moment";
 
 export function CreateRequestForm() {
   const { user } = useUser();
+  const { teams: allTeams } = useTeams();
   const { data: budgetEntries } = useBudgetEntries();
   const { trigger, isMutating } = useCreateRequest();
-  const teams: { id: number; name: string }[] = user?.user?.teams ?? [];
-  const hasMultipleTeams = teams.length > 1;
 
-  const costCenterOptions = budgetEntries
-    ? budgetEntries
-        .filter((b: any) => {
-          if (!user?.user?.teams) return false;
-          const isAdmin =
-            user?.user?.role?.toLowerCase() === "admin" ||
-            user?.user?.position?.toLowerCase() === "superadmin";
-          if (isAdmin) return true;
+  const isAdmin =
+    user?.user?.role?.toLowerCase() === "admin" ||
+    user?.user?.position?.toLowerCase() === "superadmin";
 
-          return user.user.teams.some(
-            (team: any) => {
-              const codeMatch = String(team.unq_code) === String(b.unq_code);
-              const nameMatch = b.name.toLowerCase().includes(team.name.toLowerCase()) || 
-                                team.name.toLowerCase().includes(b.name.toLowerCase());
-              return codeMatch || nameMatch;
-            }
-          );
-        })
-        .map((b: any) => ({
-          name: `${b.unq_code} - ${b.name}`,
-          fy_start: b.fy_start,
-          fy_end: b.fy_end,
-        }))
-    : [];
+  const teamOptions = isAdmin ? allTeams : (user?.user?.teams ?? []);
+  const hasMultipleTeams = isAdmin || teamOptions.length > 1;
+
+
 
   const now = new Date();
   const currentMonth = now.getMonth(); // 0-indexed, Oct is 9, Nov is 10
@@ -62,10 +47,12 @@ export function CreateRequestForm() {
   const defaultFyStart = new Date(startYear, 10, 1);
   const defaultFyEnd = new Date(startYear + 1, 9, 31);
 
+  const schema = useMemo(() => getCreateRequestSchema(budgetEntries || []), [budgetEntries]);
   const form = useForm<CreateRequestValues>({
-    resolver: zodResolver(createRequestSchema) as any,
+    resolver: zodResolver(schema) as any,
     defaultValues: {
-      team_id: teams.length === 1 ? String(teams[0].id) : "",
+      team_id: teamOptions.length === 1 && !isAdmin ? String(teamOptions[0].id) : "",
+      remarks: "",
       desired_delivery_date: new Date(),
       transaction_type: "Vendor Payment",
       payment_method: "Cash",
@@ -93,9 +80,31 @@ export function CreateRequestForm() {
     },
   });
 
+  const teamId = form.watch("team_id");
+
+  useEffect(() => {
+    if (teamId && budgetEntries) {
+      const selectedTeam = teamOptions.find((t: any) => String(t.id) === String(teamId));
+      if (selectedTeam) {
+        const matchingBudget = (budgetEntries as BudgetEntry[]).find(b => 
+          String(b.unq_code) === String((selectedTeam as any).unq_code) ||
+          b.name.toLowerCase().includes(selectedTeam.name.toLowerCase()) ||
+          selectedTeam.name.toLowerCase().includes(b.name.toLowerCase())
+        );
+
+        if (matchingBudget) {
+          const costCenterValue = `${matchingBudget.unq_code} - ${matchingBudget.name}`;
+          form.setValue("cost_center", costCenterValue, { shouldDirty: true, shouldValidate: true });
+          if (matchingBudget.fy_start) form.setValue("fy_start", new Date(matchingBudget.fy_start), { shouldDirty: true, shouldValidate: true });
+          if (matchingBudget.fy_end) form.setValue("fy_end", new Date(matchingBudget.fy_end), { shouldDirty: true, shouldValidate: true });
+        }
+      }
+    }
+  }, [teamId, budgetEntries, teamOptions, form]);
+
   const attachments = form.watch("attachments");
 
-  async function onSubmit(values: any, isDraft = false) {
+  async function onSubmit(values: CreateRequestValues, isDraft = false) {
     const formData = new FormData();
 
     // Append top-level fields
@@ -110,14 +119,15 @@ export function CreateRequestForm() {
     }
 
     formData.append("transaction_type", values.transaction_type);
+    formData.append("remarks", values.remarks || "");
     formData.append("payment_method", values.payment_method);
     formData.append("purchase_type", values.purchase_type);
     formData.append("cost_center", values.cost_center);
     formData.append("currency", values.currency);
     formData.append("vendor", values.vendor);
     formData.append("payee", values.payee);
-    formData.append("charge_to", values.charge_to);
-    formData.append("management_number", values.management_number);
+    formData.append("charge_to", values.charge_to || "");
+    formData.append("management_number", values.management_number || "");
     formData.append("fy_start", values.fy_start ? moment(values.fy_start).format("YYYY-MM-DD") : "");
     formData.append("fy_end", values.fy_end ? moment(values.fy_end).format("YYYY-MM-DD") : "");
     formData.append("status_id", isDraft ? "7" : "1");
@@ -163,7 +173,7 @@ export function CreateRequestForm() {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((v) => onSubmit(v, false))}
+        onSubmit={form.handleSubmit((v: CreateRequestValues) => onSubmit(v, false))}
         className="relative space-y-8 pb-32"
       >
         <div className="space-y-8">
@@ -182,10 +192,11 @@ export function CreateRequestForm() {
                     name="team_id"
                     label="Team"
                     variant="select_by_id"
-                    selectOptions={teams.map((t) => ({
+                    selectOptions={teamOptions.map((t: any) => ({
                       id: t.id,
                       name: t.name,
                     }))}
+                    disabled={isMutating}
                   />
                 )}
                 <DatePicker
@@ -193,6 +204,7 @@ export function CreateRequestForm() {
                   name="desired_delivery_date"
                   label="Desired Delivery Date"
                   placeholder="When is this needed?"
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
@@ -200,6 +212,7 @@ export function CreateRequestForm() {
                   label="Transaction Type"
                   variant="select_by_name"
                   selectOptions={TRANSACTION_TYPE_OPTIONS}
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
@@ -207,15 +220,15 @@ export function CreateRequestForm() {
                   label="Payment Method"
                   variant="select_by_name"
                   selectOptions={PAYMENT_METHOD_OPTIONS}
+                  disabled={isMutating}
                 />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <Field
                   control={form.control}
                   name="purchase_type"
                   label="Purchase Type"
                   variant="select_by_name"
                   selectOptions={PURCHASE_TYPE_OPTIONS}
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
@@ -223,18 +236,21 @@ export function CreateRequestForm() {
                   label="Currency"
                   variant="select_by_name"
                   selectOptions={CURRENCY_OPTIONS}
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
                   name="vendor"
                   label="Vendor"
                   variant="input"
+                  disabled={isMutating}
                 />
                 <Field
                   control={form.control}
                   name="payee"
                   label="Payee / Recipient"
                   variant="input"
+                  disabled={isMutating}
                 />
               </div>
             </CardContent>
@@ -252,12 +268,9 @@ export function CreateRequestForm() {
                   control={form.control}
                   name="cost_center"
                   label="Cost Center"
-                  variant="combobox"
-                  selectOptions={costCenterOptions}
-                  onSelect={(option) => {
-                    if (option.fy_start) form.setValue("fy_start", new Date(option.fy_start), { shouldDirty: true, shouldValidate: true });
-                    if (option.fy_end) form.setValue("fy_end", new Date(option.fy_end), { shouldDirty: true, shouldValidate: true });
-                  }}
+                  variant="input"
+                  disabled={true}
+                  placeholder="Will be based on selected Team"
                 />
                 <Field
                   control={form.control}

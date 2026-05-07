@@ -40,6 +40,7 @@ export function useCancelRequest(id: string | number) {
     post,
     {
       onSuccess: () => {
+        mutate((key) => typeof key === "string" && key.includes(`${baseUrl}/request/${id}`));
         mutate((key) => typeof key === "string" && key.includes(`${baseUrl}/requests`));
         showSuccessToast("Request cancelled successfully");
       },

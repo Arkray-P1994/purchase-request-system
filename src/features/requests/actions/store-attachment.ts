@@ -1,12 +1,8 @@
-import useSWRMutation from "swr/mutation";
 import { baseUrl } from "@/lib/base-url";
-import { toast } from "sonner";
 import { mutate } from "swr";
+import useSWRMutation from "swr/mutation";
 
-async function storeAttachmentFetcher(
-  url: string,
-  { arg }: { arg: FormData },
-) {
+async function storeAttachmentFetcher(url: string, { arg }: { arg: FormData }) {
   const response = await fetch(url, {
     method: "POST",
     body: arg,

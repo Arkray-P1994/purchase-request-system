@@ -62,7 +62,8 @@ export function ApprovalActions({ request, size = "sm", variant = "full" }: Appr
   const isFinalized =
     request.status_id?.name === "Released" ||
     request.status_id?.name === "Rejected" ||
-    request.status_id?.name === "Disapproved";
+    request.status_id?.name === "Disapproved" ||
+    request.status_id?.name === "Cancelled";
 
   if (request.status_id?.name === "Draft") {
     return null;

@@ -3,10 +3,12 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { z } from "zod";
 
+const stringOrNumber = z.union([z.string(), z.number()]).transform((val) => String(val));
+
 const requestsSearchSchema = z.object({
-  filter: z.string().optional(),
-  ticket_id: z.string().optional(),
-  status: z.string().optional(),
+  filter: stringOrNumber.optional(),
+  ticket_id: stringOrNumber.optional(),
+  status: stringOrNumber.optional(),
   action: z.enum(["create"]).optional(),
 });
 

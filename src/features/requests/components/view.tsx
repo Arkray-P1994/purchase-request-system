@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { toast } from "sonner";
 import { useRequest } from "@/api/fetch-request";
 import { ConfigDrawer } from "@/components/layout/config-drawer";
 import { Header } from "@/components/layout/header";
@@ -32,6 +33,7 @@ import {
   AlertCircle,
   Eye,
   Download,
+  Loader2,
 } from "lucide-react";
 import moment from "moment";
 import { useParams, Link, useNavigate } from "@tanstack/react-router";
@@ -40,6 +42,7 @@ import { StatusBadge } from "./status-badge";
 import Spinner from "@/components/ui/spinner";
 import { useDeleteRequest } from "../actions/delete-request";
 import { useCancelRequest } from "../actions/cancel-request";
+import { useStoreAttachment } from "../actions/store-attachment";
 import { useUser } from "@/api/fetch-user";
 import {
   Dialog,
@@ -49,7 +52,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Trash2, AlertTriangle, Ban } from "lucide-react";
+import { Trash2, AlertTriangle, Ban, Upload } from "lucide-react";
 
 async function forceDownload(url: string, filename: string) {
   try {
@@ -87,6 +90,27 @@ export function ViewRequest() {
   const { trigger: cancelReq, isMutating: isCancelling } = useCancelRequest(
     String(requestId),
   );
+  const { trigger: uploadAttachments, isMutating: isUploading } =
+    useStoreAttachment(String(requestId));
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    const formData = new FormData();
+    Array.from(e.target.files).forEach((file) => {
+      formData.append("attachments[]", file);
+    });
+    
+    toast.promise(uploadAttachments(formData), {
+      loading: "Uploading attachments...",
+      success: "Attachments uploaded successfully!",
+      error: "Failed to upload attachments. Please try again.",
+    });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   if (isLoading) {
     return <Spinner />;
@@ -118,7 +142,7 @@ export function ViewRequest() {
         </div>
       </Header>
       <Main>
-        <div className="max-w-8xl mx-auto space-y-8 pb-12">
+        <div className="max-w-full mx-auto space-y-8 pb-12">
           {/* Top Actions */}
           <div className="flex items-center justify-between">
             <Button
@@ -132,7 +156,7 @@ export function ViewRequest() {
             <div className="flex items-center gap-2">
               {request && <ApprovalActions request={request} />}
               {request && (user?.user?.role?.toLowerCase() === "admin" 
-                ? !["For Cash Release", "Released", "Approved", "Disapproved", "Rejected"].includes(request.status_id?.name || "")
+                ? !["For Cash Release", "Released", "Approved", "Disapproved", "Rejected", "Cancelled"].includes(request.status_id?.name || "")
                 : ["Pending", "Draft"].includes(request.status_id?.name || "")) && (
                 <>
                   <Link
@@ -563,7 +587,8 @@ export function ViewRequest() {
                         {!(
                           request.status_id?.name === "Approved" ||
                           request.status_id?.name === "Rejected" ||
-                          request.status_id?.name === "Disapproved"
+                          request.status_id?.name === "Disapproved" ||
+                          request.status_id?.name === "Cancelled"
                         )
                           ? "Approval Workflow"
                           : "Approval History"}
@@ -572,7 +597,8 @@ export function ViewRequest() {
                         {!(
                           request.status_id?.name === "Approved" ||
                           request.status_id?.name === "Rejected" ||
-                          request.status_id?.name === "Disapproved"
+                          request.status_id?.name === "Disapproved" ||
+                          request.status_id?.name === "Cancelled"
                         ) ? (
                           <>
                             {request.current_level}/
@@ -599,7 +625,8 @@ export function ViewRequest() {
                     {!(
                       request.status_id?.name === "Approved" ||
                       request.status_id?.name === "Rejected" ||
-                      request.status_id?.name === "Disapproved"
+                      request.status_id?.name === "Disapproved" ||
+                      request.status_id?.name === "Cancelled"
                     ) ? (
                       <div className="relative">
                         {(Array.isArray(request.workflow)
@@ -803,81 +830,129 @@ export function ViewRequest() {
                       <Paperclip className="h-5 w-5 text-primary" />
                       Attachments
                     </CardTitle>
-                    <Badge
-                      variant="secondary"
-                      className="text-[10px] font-bold bg-primary/10 text-primary hover:bg-primary/20 border-none"
-                    >
-                      {request.attachments?.length || 0} Files
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant="secondary"
+                        className="text-[10px] font-bold bg-primary/10 text-primary hover:bg-primary/20 border-none"
+                      >
+                        {request.attachments?.length || 0} Files
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-6 px-2 text-[10px] uppercase tracking-wider font-bold"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                      >
+                        {isUploading ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <Upload className="w-3 h-3 mr-1" />
+                        )}
+                        Upload
+                      </Button>
+                      <input
+                        type="file"
+                        multiple
+                        className="hidden"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                      />
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-6">
-                  {request.attachments && request.attachments.length > 0 ? (
-                    <div className="space-y-3">
-                      {request.attachments.map((file: any, index: number) => {
-                        const fileUrl = `${baseUrl}/${file.file_path?.replace(/^[\/\\]/, "")}`;
-                        const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(
-                          file.file_name,
-                        );
-                        const isPdf = /\.pdf$/i.test(file.file_name);
-                        const isViewable = isImage || isPdf;
+                  {(() => {
+                    const groupedAttachments = request.attachments?.reduce(
+                      (acc: any, file: any) => {
+                        const userName =
+                          file.user?.name || request.user_id?.name || "Unknown User";
+                        if (!acc[userName]) acc[userName] = [];
+                        acc[userName].push(file);
+                        return acc;
+                      },
+                      {},
+                    ) || {};
 
-                        return (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between gap-3 p-3 rounded-xl bg-background border border-muted shadow-sm hover:border-primary/50 hover:shadow-md transition-all group"
-                          >
-                            <div className="flex items-center gap-3 min-w-0 flex-1">
-                              <div className="p-2 bg-muted rounded-lg group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                                <FileText className="h-4 w-4" />
-                              </div>
-                              <div className="flex flex-col min-w-0">
-                                <span className="text-xs font-bold truncate pr-2">
-                                  {file.file_name}
-                                </span>
+                    return Object.keys(groupedAttachments).length > 0 ? (
+                      <div className="space-y-6">
+                        {Object.entries(groupedAttachments).map(
+                          ([userName, files]: any) => (
+                            <div key={userName} className="space-y-3">
+                              <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                                <User className="h-3.5 w-3.5" />
+                                {userName}
+                              </h4>
+                              <div className="space-y-3">
+                                {files.map((file: any, index: number) => {
+                                  const fileUrl = `${baseUrl}/${file.file_path?.replace(/^[\/\\]/, "")}`;
+                                  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(
+                                    file.file_name,
+                                  );
+                                  const isPdf = /\.pdf$/i.test(file.file_name);
+                                  const isViewable = isImage || isPdf;
+
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="flex items-center justify-between gap-3 p-3 rounded-xl bg-background border border-muted shadow-sm hover:border-primary/50 hover:shadow-md transition-all group"
+                                    >
+                                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                                        <div className="p-2 bg-muted rounded-lg group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                                          <FileText className="h-4 w-4" />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                          <span className="text-xs font-bold truncate pr-2">
+                                            {file.file_name}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      <div className="flex gap-2 shrink-0">
+                                        {isViewable && (
+                                          <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="h-8 text-xs bg-primary/10 hover:bg-primary/20 text-primary"
+                                            onClick={() => {
+                                              setSelectedAttachment(fileUrl);
+                                              setAttachmentType(
+                                                isImage ? "image" : "pdf",
+                                              );
+                                            }}
+                                          >
+                                            <Eye className="h-3 w-3 mr-1" />
+                                            View
+                                          </Button>
+                                        )}
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="h-8 text-xs"
+                                          onClick={() =>
+                                            forceDownload(fileUrl, file.file_name)
+                                          }
+                                        >
+                                          <Download className="h-3 w-3 mr-1" />
+                                          Download
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             </div>
-                            <div className="flex gap-2 shrink-0">
-                              {isViewable && (
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  className="h-8 text-xs bg-primary/10 hover:bg-primary/20 text-primary"
-                                  onClick={() => {
-                                    setSelectedAttachment(fileUrl);
-                                    setAttachmentType(
-                                      isImage ? "image" : "pdf",
-                                    );
-                                  }}
-                                >
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  View
-                                </Button>
-                              )}
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-8 text-xs"
-                                onClick={() =>
-                                  forceDownload(fileUrl, file.file_name)
-                                }
-                              >
-                                <Download className="h-3 w-3 mr-1" />
-                                Download
-                              </Button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 border-2 border-dashed rounded-xl border-muted">
-                      <Paperclip className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                      <p className="text-xs text-muted-foreground font-medium">
-                        No attachments provided.
-                      </p>
-                    </div>
-                  )}
+                          ),
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 border-2 border-dashed rounded-xl border-muted">
+                        <Paperclip className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
+                        <p className="text-xs text-muted-foreground font-medium">
+                          No attachments provided.
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             </div>

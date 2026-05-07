@@ -12,6 +12,7 @@ import {
   Package,
   XCircle,
 } from "lucide-react";
+import { useAuth } from "@/features/auth/auth";
 import { RequestDistribution } from "./charts/request-distribution";
 import { StatusDistribution } from "./charts/status-distribution";
 import { TeamDistribution } from "./charts/team-distribution";
@@ -24,6 +25,7 @@ import { ModeToggle } from "@/components/toggle";
 
 export default function DashboardPage() {
   const { data, isLoading } = useDashboard();
+  const { user } = useAuth();
 
   if (isLoading) return <Spinner />;
 
@@ -37,6 +39,10 @@ export default function DashboardPage() {
   const disapproved = stats.Disapproved ?? 0;
   const draft = stats.Draft ?? 0;
   const draftRequests = data.draft_requests ?? [];
+
+  const isAdmin =
+    user?.role?.toLowerCase() === "admin" ||
+    user?.position?.toLowerCase() === "superadmin";
 
   return (
     <>
@@ -123,8 +129,10 @@ export default function DashboardPage() {
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-6">
-          <TeamDistribution data={data.team_distribution} />
-          <CostCenterExpenditure data={data.expenditure_by_cost_center} />
+          <TeamDistribution data={data.team_distribution} fullWidth={!isAdmin} />
+          {isAdmin && (
+            <CostCenterExpenditure data={data.expenditure_by_cost_center} />
+          )}
         </div>
 
         <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">

@@ -46,6 +46,8 @@ interface FieldProps<T extends FieldValues> {
   className?: string;
   onSelect?: (value: any) => void;
   readOnly?: boolean;
+  autoGrow?: boolean;
+  min?: number;
 }
 type SelectOption = {
   id: number;
@@ -71,6 +73,8 @@ export function Field<T extends FieldValues>({
   className = "",
   onSelect,
   readOnly = false,
+  autoGrow = false,
+  min,
 }: FieldProps<T>) {
   return (
     <FormField
@@ -84,8 +88,9 @@ export function Field<T extends FieldValues>({
               <Textarea
                 placeholder={placeholder}
                 rows={rows}
+                autoGrow={autoGrow}
                 {...field}
-                className={cn("min-h-24 text-base border-muted-foreground resize-none", className)}
+                className={cn("border-muted-foreground resize-none", className)}
               />
             ) : variant === "select" ? (
               <Select
@@ -173,6 +178,7 @@ export function Field<T extends FieldValues>({
             ) : (
               <Input
                 type={type}
+                min={min}
                 placeholder={placeholder}
                 {...field}
                 value={type === "number" && field.value === 0 ? "" : (field.value ?? "")}
@@ -240,7 +246,7 @@ function ComboboxField({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+      <PopoverContent className="min-w-[var(--radix-popover-trigger-width)] w-[400px] p-0" align="start">
         <Command>
           <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
           <CommandList>
@@ -342,7 +348,7 @@ function MultiSelectField({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+      <PopoverContent className="min-w-[var(--radix-popover-trigger-width)] w-[400px] p-0" align="start">
         <Command>
           <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
           <CommandList>
@@ -414,7 +420,7 @@ function ComboboxByIdField({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+      <PopoverContent className="min-w-[var(--radix-popover-trigger-width)] w-[400px] p-0" align="start">
         <Command>
           <CommandInput placeholder={`Search ${label.toLowerCase()}...`} />
           <CommandList>

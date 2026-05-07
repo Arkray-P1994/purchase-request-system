@@ -13,6 +13,7 @@ import {
 import { useEffect } from "react";
 import { ItemTableRow } from "./item-table-row";
 import { ItemMobileCard } from "./item-mobile-card";
+import { cn } from "@/lib/utils";
 
 export function ItemsSection() {
   const { control, watch, setValue, setError, clearErrors, formState: { errors } } = useFormContext<CreateRequestValues>();
@@ -82,6 +83,11 @@ export function ItemsSection() {
           <p className="text-sm text-muted-foreground">
             List all items for this procurement request.
           </p>
+          {((errors.items as any)?.message || (errors.items as any)?.root?.message) && (
+            <p className="text-xs font-bold text-destructive uppercase tracking-wider mt-1 animate-pulse">
+              {((errors.items as any)?.message || (errors.items as any)?.root?.message) as string}
+            </p>
+          )}
         </div>
         <Button
           type="button"
@@ -105,7 +111,10 @@ export function ItemsSection() {
         </Button>
       </div>
 
-      <div className="border rounded-xl bg-card shadow-sm overflow-hidden flex flex-col w-full">
+      <div className={cn(
+        "border rounded-xl bg-card shadow-sm overflow-hidden flex flex-col w-full transition-all duration-300",
+        ((errors.items as any)?.message || (errors.items as any)?.root?.message) && "border-destructive ring-1 ring-destructive/20 shadow-md shadow-destructive/5"
+      )}>
         {/* Desktop View: Table */}
         <div className="hidden xl:block w-full overflow-x-auto relative">
           <div className="min-w-[1000px] w-full">

@@ -11,7 +11,7 @@ export function useFormSettings() {
   });
 
   return {
-    data: data ?? [],
+    data: data ?? { statuses: [], teams: [] },
     error,
     isLoading,
   };

@@ -33,7 +33,11 @@ export interface ExpenditureByCostCenter {
 
 export interface TeamDistribution {
   team_name: string;
-  count: number;
+  total_count: number;
+  statuses: {
+    status_name: string;
+    count: number;
+  }[];
 }
 
 export interface DashboardKPIs {

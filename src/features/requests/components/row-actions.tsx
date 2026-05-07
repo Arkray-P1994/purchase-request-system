@@ -39,7 +39,7 @@ export function DataTableRowActions({
   const isAdmin = user?.user?.role?.toLowerCase() === "admin";
   const isCreator = String(user?.user?.id) === String(row.original.user_id?.id);
   const statusName = row.original.status_id?.name || "";
-  const isFinalized = ["For Cash Release", "Released", "Cash Released", "Approved", "Disapproved", "Rejected"].includes(statusName);
+  const isFinalized = ["For Cash Release", "Released", "Cash Released", "Approved", "Disapproved", "Rejected", "Cancelled"].includes(statusName);
   const canModify = isAdmin ? !isFinalized : ["Pending", "Draft"].includes(statusName) && isCreator;
 
   return (

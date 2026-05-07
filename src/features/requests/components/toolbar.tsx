@@ -5,7 +5,7 @@ import { type Table } from "@tanstack/react-table";
 import { debounce, useQueryState } from "nuqs";
 import { DataTableViewOptions } from "../../../components/data-table/view-options";
 import { DataTableFacetedFilter } from "../../../components/data-table/faceted-filter";
-import { useTeams } from "@/api/fetch-teams";
+import { useFormSettings } from "@/api/fetch-form-settings";
 import { 
   CheckCircle2, 
   Clock, 
@@ -14,13 +14,15 @@ import {
   Users
 } from "lucide-react";
 
-const STATUS_OPTIONS = [
-  { label: "Pending", value: "1", icon: Clock },
-  { label: "Approved", value: "2", icon: CheckCircle2 },
-  { label: "Disapproved", value: "3", icon: AlertCircle },
-  { label: "Released", value: "4", icon: Send },
-  { label: "Under Approval", value: "5", icon: Clock },
-];
+const getStatusIcon = (name: string) => {
+  switch (name?.toLowerCase()) {
+    case 'approved': return CheckCircle2;
+    case 'disapproved': return AlertCircle;
+    case 'rejected': return AlertCircle;
+    case 'released': return Send;
+    default: return Clock;
+  }
+}
 
 type DataTableToolbarProps<TData> = {
   table: Table<TData>;
@@ -32,7 +34,7 @@ export function DataTableToolbar<TData>({
   table,
   searchPlaceholder = "Filter...",
 }: DataTableToolbarProps<TData>) {
-  const { teams } = useTeams();
+  const { data: formSettings } = useFormSettings();
   
   const [filter, setfilter] = useQueryState("filter", {
     defaultValue: "",
@@ -65,7 +67,13 @@ export function DataTableToolbar<TData>({
 
   const isFiltered = filter !== "" || statusId !== "" || teamId !== "" || table.getState().columnFilters.length > 0;
 
-  const teamOptions = teams.map((team: any) => ({
+  const statusOptions = (formSettings.statuses || []).map((status: any) => ({
+    label: status.name,
+    value: String(status.id),
+    icon: getStatusIcon(status.name),
+  }));
+
+  const teamOptions = (formSettings.teams || []).map((team: any) => ({
     label: team.name,
     value: String(team.id),
     icon: Users,
@@ -84,7 +92,7 @@ export function DataTableToolbar<TData>({
         <div className="flex items-center gap-2">
           <DataTableFacetedFilter
             title="Status"
-            options={STATUS_OPTIONS}
+            options={statusOptions}
             // Overriding internal column logic since we use nuqs
             column={{
               getFilterValue: () => (statusId ? statusId.split(",") : []),

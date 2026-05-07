@@ -34,9 +34,11 @@ export function ItemTableRow({
           name={`items.${index}.item_title` as any}
           label="Title"
           placeholder="What are you buying?"
-          variant="input"
+          variant="textarea"
+          rows={1}
+          autoGrow
           hideLabel
-          className="h-9 text-xs font-semibold shadow-sm focus-visible:ring-1"
+          className="min-h-[36px] text-xs font-semibold shadow-sm focus-visible:ring-1"
         />
       </TableCell>
       <TableCell className="p-3 border-r align-top">
@@ -68,9 +70,11 @@ export function ItemTableRow({
           name={`items.${index}.item_purpose` as any}
           label="Purpose"
           placeholder="Why is this needed?"
-          variant="input"
+          variant="textarea"
+          rows={1}
+          autoGrow
           hideLabel
-          className="h-9 text-xs shadow-sm focus-visible:ring-1"
+          className="min-h-[36px] text-xs shadow-sm focus-visible:ring-1"
         />
       </TableCell>
       <TableCell className="p-3 border-r align-top">
@@ -80,6 +84,7 @@ export function ItemTableRow({
             name={`items.${index}.unit_price` as any}
             label="Price"
             type="number"
+            min={0}
             variant="input"
             hideLabel
             className={cn("h-9 text-xs shadow-sm focus-visible:ring-1 text-right font-mono", isOverBudget && "border-destructive focus-visible:ring-destructive text-destructive")}
@@ -97,6 +102,7 @@ export function ItemTableRow({
           name={`items.${index}.quantity` as any}
           label="Qty"
           type="number"
+          min={0}
           variant="input"
           hideLabel
           className="h-9 text-xs shadow-sm focus-visible:ring-1 text-center font-mono"
@@ -113,9 +119,11 @@ export function ItemTableRow({
           name={`items.${index}.item_remarks` as any}
           label="Remarks"
           placeholder="Any extra details?"
-          variant="input"
+          variant="textarea"
+          rows={1}
+          autoGrow
           hideLabel
-          className="h-9 text-xs shadow-sm focus-visible:ring-1"
+          className="min-h-[36px] text-xs shadow-sm focus-visible:ring-1"
         />
       </TableCell>
       <TableCell className="p-3 text-center align-middle">

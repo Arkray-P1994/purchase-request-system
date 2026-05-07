@@ -13,7 +13,7 @@ export function CreateRequestPage() {
           <ConfigDrawer />
         </div>
       </Header>
-      <Main className="max-w-8xl mx-auto">
+      <Main fluid>
         <div className="mb-8">
           <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             New Purchase Request

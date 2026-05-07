@@ -31,33 +31,37 @@ const chartConfig = {
     label: "Pending",
     color: "hsl(var(--chart-1))",
   },
+  "Under Approval": {
+    label: "Under Approval",
+    color: "hsl(var(--chart-2))",
+  },
   Approved: {
     label: "Approved",
-    color: "hsl(var(--chart-2))",
+    color: "hsl(var(--chart-3))",
+  },
+  "For Cash Release": {
+    label: "For Cash Release",
+    color: "hsl(var(--chart-4))",
+  },
+  "Cash Released": {
+    label: "Cash Released",
+    color: "hsl(var(--chart-5))",
+  },
+  Released: {
+    label: "Released",
+    color: "hsl(var(--primary))",
   },
   Disapproved: {
     label: "Disapproved",
     color: "hsl(var(--destructive))",
   },
-  "For Cash Release": {
-    label: "For Cash Release",
-    color: "hsl(var(--chart-3))",
-  },
-  "Cash Released": {
-    label: "Cash Released",
-    color: "hsl(var(--chart-4))",
+  Cancelled: {
+    label: "Cancelled",
+    color: "hsl(var(--muted-foreground))",
   },
   Draft: {
     label: "Draft",
-    color: "hsl(var(--muted-foreground))",
-  },
-  Released: {
-    label: "Released",
-    color: "hsl(var(--chart-5))",
-  },
-  "Under Approval": {
-    label: "Under Approval",
-    color: "hsl(var(--chart-1))",
+    color: "hsl(var(--muted))",
   },
 } satisfies ChartConfig;
 

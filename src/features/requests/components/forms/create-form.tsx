@@ -36,7 +36,11 @@ export function CreateRequestForm() {
     user?.user?.role?.toLowerCase() === "admin" ||
     user?.user?.position?.toLowerCase() === "superadmin";
 
-  const teamOptions = isAdmin ? allTeams : (user?.user?.teams ?? []);
+  const teamOptions = useMemo(() => {
+    const teams = isAdmin ? allTeams : (user?.user?.teams ?? []);
+    return [...teams].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }, [isAdmin, allTeams, user]);
+
   const hasMultipleTeams = isAdmin || teamOptions.length > 1;
 
 

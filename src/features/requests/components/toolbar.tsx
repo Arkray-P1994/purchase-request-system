@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Cross2Icon } from "@radix-ui/react-icons";
@@ -67,17 +68,25 @@ export function DataTableToolbar<TData>({
 
   const isFiltered = filter !== "" || statusId !== "" || teamId !== "" || table.getState().columnFilters.length > 0;
 
-  const statusOptions = (formSettings.statuses || []).map((status: any) => ({
-    label: status.name,
-    value: String(status.id),
-    icon: getStatusIcon(status.name),
-  }));
+  const statusOptions = useMemo(() => {
+    return (formSettings.statuses || [])
+      .map((status: any) => ({
+        label: status.name,
+        value: String(status.id),
+        icon: getStatusIcon(status.name),
+      }))
+      .sort((a: any, b: any) => a.label.localeCompare(b.label));
+  }, [formSettings.statuses]);
 
-  const teamOptions = (formSettings.teams || []).map((team: any) => ({
-    label: team.name,
-    value: String(team.id),
-    icon: Users,
-  }));
+  const teamOptions = useMemo(() => {
+    return (formSettings.teams || [])
+      .map((team: any) => ({
+        label: team.name,
+        value: String(team.id),
+        icon: Users,
+      }))
+      .sort((a: any, b: any) => a.label.localeCompare(b.label));
+  }, [formSettings.teams]);
 
   return (
     <div className="flex items-center justify-between">

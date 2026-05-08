@@ -14,7 +14,7 @@ import { useUser } from "@/api/fetch-user";
 import { useApproveRequest } from "../actions/approve-request";
 import { useDisapproveRequest } from "../actions/disapprove-request";
 import { useReleaseRequest } from "../actions/release-request";
-import { Request } from "./schema";
+import { PurchaseRequest, WorkflowStep } from "@/types/request";
 import {
   Tooltip,
   TooltipContent,
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/tooltip";
 
 interface ApprovalActionsProps {
-  request: Request;
+  request: PurchaseRequest;
   size?: "default" | "sm" | "lg" | "icon";
   variant?: "full" | "icon";
 }
@@ -41,12 +41,14 @@ export function ApprovalActions({ request, size = "sm", variant = "full" }: Appr
   const [openDisapprove, setOpenDisapprove] = useState(false);
   const [openRelease, setOpenRelease] = useState(false);
 
-  const workflowSteps = (request.workflow || []).filter(
-    (w: any) => w && !w.deleted_at
-  );
+  const workflowSteps = (
+    Array.isArray(request.workflow)
+      ? request.workflow
+      : Object.values(request.workflow || {})
+  ).filter((w: any) => w && typeof w === "object" && "approval_level" in w && !w.deleted_at) as WorkflowStep[];
 
   const currentStep = workflowSteps.find(
-    (step: any) => Number(step.approval_level) === Number(request.current_level)
+    (step) => Number(step.approval_level) === Number(request.current_level)
   );
 
   const isCurrentApprover =

@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -21,8 +22,12 @@ interface CreateUserFormProps {
 }
 
 export function CreateUserForm({ open, onOpenChange }: CreateUserFormProps) {
-  const { teams, isLoading: teamsLoading } = useTeams();
+  const { teams: rawTeams, isLoading: teamsLoading } = useTeams();
   const { trigger, isMutating } = useCreateUser();
+
+  const teams = useMemo(() => {
+    return [...(rawTeams || [])].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }, [rawTeams]);
 
   const form = useForm<CreateUser>({
     resolver: zodResolver(createUserSchema),

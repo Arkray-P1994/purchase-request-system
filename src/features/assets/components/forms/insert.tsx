@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,8 +25,20 @@ interface CreateFormProps {
 }
 
 export function AssetInsertForm({ data, action, setOpen }: CreateFormProps) {
-  const { data: formSettings, isLoading: formSettingsLoading } =
+  const { data: rawFormSettings, isLoading: formSettingsLoading } =
     useFormSettings();
+
+  const formSettings = useMemo(() => {
+    if (!rawFormSettings?.data) return rawFormSettings;
+    const sortedData = { ...rawFormSettings.data };
+    
+    if (sortedData.teams) sortedData.teams = [...sortedData.teams].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    if (sortedData.statuses) sortedData.statuses = [...sortedData.statuses].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    if (sortedData.categories) sortedData.categories = [...sortedData.categories].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    if (sortedData.currencies) sortedData.currencies = [...sortedData.currencies].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    
+    return { ...rawFormSettings, data: sortedData };
+  }, [rawFormSettings]);
   const { user } = useUser();
   const { trigger, isMutating } = useInsertAsset();
   const { trigger: updateTrigger, isMutating: updateMutating } = useUpdateAsset(

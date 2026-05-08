@@ -83,7 +83,10 @@ export function EditRequestForm({ initialData }: EditRequestFormProps) {
   });
 
   const teamId = form.watch("team_id");
-  const teamOptions = isAdmin ? allTeams : (user?.user?.teams ?? []);
+  const teamOptions = useMemo(() => {
+    const teams = isAdmin ? allTeams : (user?.user?.teams ?? []);
+    return [...teams].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }, [isAdmin, allTeams, user]);
 
   useEffect(() => {
     if (teamId && budgetEntries) {

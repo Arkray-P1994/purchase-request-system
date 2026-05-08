@@ -554,3 +554,27 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+  @keyframes bouncy {
+    0%, 100% {
+      transform: translateY(0) scale(1);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+    50% {
+      transform: translateY(-8px) scale(1.02);
+      animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1);
+    }
+  }
+  .animate-bouncy {
+    animation: bouncy 2s infinite ease-in-out;
+  }
+}

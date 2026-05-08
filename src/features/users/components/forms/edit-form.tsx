@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Form } from "@/components/ui/form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -23,8 +24,12 @@ interface EditUserFormProps {
 }
 
 export function EditUserForm({ user, open, onOpenChange }: EditUserFormProps) {
-  const { teams, isLoading: teamsLoading } = useTeams();
+  const { teams: rawTeams, isLoading: teamsLoading } = useTeams();
   const { trigger, isMutating } = useUpdateUser();
+
+  const teams = useMemo(() => {
+    return [...(rawTeams || [])].sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  }, [rawTeams]);
 
   const form = useForm<UpdateUser>({
     resolver: zodResolver(updateUserSchema),

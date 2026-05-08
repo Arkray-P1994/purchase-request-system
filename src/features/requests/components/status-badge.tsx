@@ -2,9 +2,10 @@ import { Badge } from "@/components/ui/badge";
 
 interface StatusBadgeProps {
   status: string;
+  bounce?: boolean;
 }
 
-export function StatusBadge({ status }: StatusBadgeProps) {
+export function StatusBadge({ status, bounce = false }: StatusBadgeProps) {
   const variants: Record<string, string> = {
     Approved: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
     Pending: "bg-orange-500/10 text-orange-500 border-orange-500/20",
@@ -19,11 +20,16 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <Badge
       variant="outline"
-      className={`px-2 py-0.5 font-bold uppercase tracking-wider text-[10px] border ${
+      className={`relative overflow-hidden px-2.5 py-1 font-bold uppercase tracking-wider text-xs border ${
+        bounce ? "animate-bouncy" : ""
+      } ${
         variants[status] || "bg-muted text-muted-foreground border-transparent"
       } shadow-none cursor-default`}
     >
-      {status}
+      {bounce && (
+        <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+      )}
+      <span className="relative z-10">{status}</span>
     </Badge>
   );
 }

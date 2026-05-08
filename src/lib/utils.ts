@@ -66,6 +66,63 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export function formatCurrency(amount: number, currency: string = "PHP") {
+  return new Intl.NumberFormat("en-PH", {
+    style: "currency",
+    currency: currency,
+    minimumFractionDigits: 2,
+  }).format(amount);
+}
+
+export async function forceDownload(url: string, filename: string) {
+  try {
+    // In development, if the URL points to our proxied API, use a relative path
+    // so that the request goes through the Vite proxy. This completely avoids CORS errors!
+    let fetchUrl = url;
+    if (import.meta.env.DEV) {
+      try {
+        const urlObj = new URL(url);
+        if (urlObj.pathname.startsWith('/purchase-request-api')) {
+          fetchUrl = urlObj.pathname + urlObj.search;
+        }
+      } catch (e) {
+        // Fallback to original url if parsing fails
+      }
+    }
+
+    // We use fetch to get a blob, which forces the browser to download the file
+    // rather than previewing it (common with PDFs and images).
+    const response = await fetch(fetchUrl, {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch file: ${response.status} ${response.statusText}`);
+    }
+
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.warn("Blob download failed, falling back to direct link:", error);
+    // Fallback to direct link - if this is cross-origin, the browser may preview instead of download
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    link.target = "_blank";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+}
 /**
  * Generates page numbers for pagination with ellipsis
  * @param currentPage - Current page number (1-based)
